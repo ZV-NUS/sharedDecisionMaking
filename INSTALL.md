@@ -1,8 +1,39 @@
 # Installation
 
+For a full collaborator-oriented setup guide, including software versions,
+Unity, keyboard/G29 DIL configuration, and one-click commands, read
+`ENVIRONMENT_SETUP.md`.
+
 ## Python
 
 Tested with Python 3.10 through Conda.
+
+Recommended one-click setup on Windows:
+
+```powershell
+.\setup_env.bat
+```
+
+This command:
+
+1. creates `tase_highd` from `environment.yml` if it does not exist;
+2. updates the environment if it already exists;
+3. runs `scripts/check_environment.py`;
+4. runs `scripts/run_release_smoke_tests.py`.
+
+To install without running smoke tests:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\setup_env.ps1 -SkipSmokeTest
+```
+
+If Conda is unavailable and a Python 3.10+ environment is already active:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\setup_env.ps1 -UsePipOnly
+```
+
+Manual setup:
 
 ```powershell
 conda env create -f environment.yml
@@ -37,4 +68,3 @@ driver_in_loop/unity_client
 ```
 
 The project was developed with Unity 6.x. Unity 2022.3 LTS may require minor project migration and should be tested before formal experiments.
-

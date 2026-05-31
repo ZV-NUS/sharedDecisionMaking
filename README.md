@@ -13,7 +13,20 @@ It includes:
 
 ## Quick Start
 
-Create the Python environment:
+One-click setup on Windows:
+
+```powershell
+.\setup_env.bat
+```
+
+The command creates or updates the `tase_highd` Conda environment, checks the
+installation, and runs the release smoke-test matrix. To skip smoke tests:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\setup_env.ps1 -SkipSmokeTest
+```
+
+Manual Python environment setup:
 
 ```powershell
 conda env create -f environment.yml
@@ -47,6 +60,7 @@ python scripts/plot_dil_figures.py
 
 ## Documentation
 
+- `ENVIRONMENT_SETUP.md`: one-click environment setup and software version guide.
 - `INSTALL.md`: Python and dependency installation.
 - `RUN_HIGHD_EXPERIMENTS.md`: highD validation and visualization workflow.
 - `RUN_DIL_EXPERIMENTS.md`: keyboard/G29 DIL workflow.
