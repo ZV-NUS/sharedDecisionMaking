@@ -1,0 +1,28 @@
+{
+  "reference_authority": {
+    "reward_mean": -0.523261278111022,
+    "shared_risk_mean": 0.027258492656983435,
+    "shared_risk_max": 0.49328792095184326,
+    "mean_abs_delta_authority": 0.0,
+    "authority_rl_mean": 0.5389425083994865,
+    "safety_cost": 0.027258492656983435,
+    "efficiency_cost": 0.01752558370208135,
+    "comfort_cost": 0.037431522738188505,
+    "smooth_cost": 2.945180041180606e-06,
+    "reference_cost": 0.0,
+    "trust_cost": 0.0007465393509846763
+  },
+  "rl_authority": {
+    "reward_mean": -0.5082397559308447,
+    "shared_risk_mean": 0.026274174568243325,
+    "shared_risk_max": 0.4738170802593231,
+    "mean_abs_delta_authority": 0.0741008473560214,
+    "authority_rl_mean": 0.6004079729318619,
+    "safety_cost": 0.026274174568243325,
+    "efficiency_cost": 0.018506319529478787,
+    "comfort_cost": 0.03487881855107844,
+    "smooth_cost": 3.215123558675259e-05,
+    "reference_cost": 0.007735864804999437,
+    "trust_cost": 0.010336652543628588
+  }
+}

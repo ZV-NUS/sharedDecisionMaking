@@ -1,0 +1,278 @@
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+import sys
+import time
+
+DRIVER_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
+BACKEND_ROOT = Path(__file__).resolve().parent
+if str(BACKEND_ROOT) not in sys.path:
+    sys.path.insert(0, str(BACKEND_ROOT))
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from input_adapters.g29_adapter import G29InputAdapter
+from input_adapters.keyboard_adapter import KeyboardInputAdapter
+from experiment_logging.experiment_logger import ExperimentLogger
+from network.udp_state import UdpDriverInputReceiver, UdpStatePublisher
+from scenarios.dil_extension import extend_case_for_dil
+from scenarios.rollout_loader import RolloutScenarioRepository
+from shared_control.realtime_runner import RealtimeRunnerConfig, RealtimeSharedControlRunner
+
+PAPER_CASE_TO_ROLLOUT_CASE = {
+    1: 2,
+    2: 3,
+    3: 6,
+    4: 7,
+}
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Run driver-in-the-loop shared-control experiment backend.")
+    parser.add_argument("--case-id", type=int, default=6, help="Validation case id from shared_authority_rollouts.js.")
+    parser.add_argument(
+        "--paper-case-id",
+        type=int,
+        choices=sorted(PAPER_CASE_TO_ROLLOUT_CASE),
+        default=None,
+        help="Use the paper scenario mapping: 1->rollout2, 2->rollout3, 3->rollout6, 4->rollout7.",
+    )
+    parser.add_argument("--input", choices=["keyboard", "g29", "unity", "policy"], default="keyboard")
+    parser.add_argument(
+        "--dil-mode",
+        choices=["human_only", "ta_rldm", "ta_rldm_armpc", "ra_rldm"],
+        default="ta_rldm_armpc",
+        help="DIL control condition: pure human, TA-RLDM, TA-RLDM with ARMPC, or RA-RLDM.",
+    )
+    parser.add_argument(
+        "--policy-key",
+        choices=["controller_ego", "ra_rldm_ego", "machine_ego", "reference_ego", "human_pred_ego", "ego"],
+        default="controller_ego",
+        help="Policy trajectory used when --input policy. controller_ego is the proposed TA-RL-ARMPC result.",
+    )
+    parser.add_argument(
+        "--policy-mode",
+        choices=["state", "control"],
+        default="state",
+        help="For --input policy: state replays the current algorithm state; control integrates current steer/acceleration.",
+    )
+    parser.add_argument("--rollout-js", type=Path, default=REPO_ROOT / "outputs" / "shared_authority_validation" / "shared_authority_rollouts.js")
+    parser.add_argument("--unity-host", default="127.0.0.1")
+    parser.add_argument("--unity-port", type=int, default=50710)
+    parser.add_argument("--unity-input-port", type=int, default=50711)
+    parser.add_argument("--runtime-rate", type=float, default=60.0, help="Backend publish/update rate for real-time Unity visualization.")
+    parser.add_argument("--g29-joystick-index", type=int, default=0, help="SDL/pygame joystick index for Logitech G29.")
+    parser.add_argument("--g29-steer-axis", type=int, default=0, help="G29 steering axis index.")
+    parser.add_argument("--g29-throttle-axis", type=int, default=2, help="G29 throttle pedal axis index.")
+    parser.add_argument("--g29-brake-axis", type=int, default=3, help="G29 brake pedal axis index.")
+    parser.add_argument("--g29-invert-steer", action="store_true", help="Invert G29 steering sign if left/right is reversed.")
+    parser.add_argument("--g29-no-invert-pedals", action="store_true", help="Use non-inverted G29 pedal axes.")
+    parser.add_argument("--g29-deadzone", type=float, default=0.03, help="Deadzone for G29 steering and pedals.")
+    parser.add_argument("--g29-smoothing", type=float, default=0.35, help="Input low-pass smoothing for G29 signals, 0 means no smoothing.")
+    parser.add_argument("--g29-reset-button", type=int, default=6, help="G29 button index used to reset the scene.")
+    parser.add_argument("--g29-quit-button", type=int, default=7, help="G29 button index used to quit the backend.")
+    parser.add_argument(
+        "--driver-accel-gain",
+        type=float,
+        default=1.8,
+        help="Additional gain for live driver throttle/brake commands before authority blending.",
+    )
+    parser.add_argument(
+        "--source-rate",
+        type=float,
+        default=0.0,
+        help=(
+            "Source trajectory rate used to convert rollout frames to seconds. "
+            "0 means use the rollout dataset rate."
+        ),
+    )
+    parser.add_argument("--no-udp", action="store_true", help="Disable UDP state publishing.")
+    parser.add_argument("--duration-s", type=float, default=0.0, help="Run duration. 0 means until quit.")
+    parser.add_argument("--start-delay-s", type=float, default=0.0, help="Delay before the first state is published, useful for starting Unity first.")
+    parser.add_argument("--wait-for-unity", action=argparse.BooleanOptionalAction, default=True, help="Wait until Unity sends a ready packet before simulation starts.")
+    parser.add_argument("--dil-extend-start-s", type=float, default=5.0, help="Prepend a constant-velocity observation segment for DIL paper cases.")
+    parser.add_argument("--dil-extend-end-s", type=float, default=6.0, help="Append a constant-velocity recovery segment for DIL paper cases.")
+    parser.add_argument("--no-dil-extension", action="store_true", help="Disable paper-case DIL extension and use the original short rollout window.")
+    parser.add_argument("--headless", action="store_true", help="Use zero keyboard input for automated smoke tests.")
+    parser.add_argument("--log-dir", type=Path, default=DRIVER_ROOT / "experiments")
+    return parser.parse_args()
+
+
+def build_input_adapter(args: argparse.Namespace):
+    if args.headless:
+        return None
+    if args.input == "keyboard":
+        return KeyboardInputAdapter()
+    if args.input == "g29":
+        return G29InputAdapter(
+            joystick_index=args.g29_joystick_index,
+            steer_axis=args.g29_steer_axis,
+            throttle_axis=args.g29_throttle_axis,
+            brake_axis=args.g29_brake_axis,
+            invert_steer=args.g29_invert_steer,
+            invert_pedals=not args.g29_no_invert_pedals,
+            deadzone=args.g29_deadzone,
+            smoothing=args.g29_smoothing,
+            reset_button=args.g29_reset_button,
+            quit_button=args.g29_quit_button,
+        )
+    if args.input == "unity":
+        return UdpDriverInputReceiver(port=args.unity_input_port, enabled=True)
+    if args.input == "policy":
+        return None
+    raise ValueError(args.input)
+
+
+def zero_command():
+    from input_adapters.base import DriverCommand
+
+    return DriverCommand(source="headless")
+
+
+def main() -> None:
+    args = parse_args()
+    repo = RolloutScenarioRepository(args.rollout_js)
+    case_id = PAPER_CASE_TO_ROLLOUT_CASE[args.paper_case_id] if args.paper_case_id is not None else args.case_id
+    case = repo.get_case(case_id)
+    replay_policy_key = args.policy_key if args.input == "policy" else None
+    source_rate = float(args.source_rate)
+    if source_rate <= 0.0:
+        source_rate = repo.frame_rate
+    if args.paper_case_id is not None and not args.no_dil_extension:
+        case = extend_case_for_dil(
+            case,
+            start_s=args.dil_extend_start_s,
+            end_s=args.dil_extend_end_s,
+            source_frame_rate=source_rate,
+        )
+    cfg = RealtimeRunnerConfig(
+        frame_rate=args.runtime_rate,
+        source_frame_rate=source_rate,
+        lane_width_m=repo.lane_width_m,
+        replay_policy_key=replay_policy_key,
+        replay_policy_mode=args.policy_mode,
+        paper_case_id=args.paper_case_id,
+        driver_accel_gain=args.driver_accel_gain,
+        dil_mode=args.dil_mode,
+    )
+    runner = RealtimeSharedControlRunner(case, cfg)
+    adapter = build_input_adapter(args)
+    ready_receiver = adapter if isinstance(adapter, UdpDriverInputReceiver) else None
+    if ready_receiver is None and args.wait_for_unity and not args.no_udp:
+        ready_receiver = UdpDriverInputReceiver(port=args.unity_input_port, enabled=True)
+    publisher = UdpStatePublisher(args.unity_host, args.unity_port, enabled=not args.no_udp)
+
+    stamp = time.strftime("%Y%m%d_%H%M%S")
+    paper_tag = f"paper{args.paper_case_id}_" if args.paper_case_id is not None else ""
+    session_dir = args.log_dir / f"{paper_tag}case{case_id}" / args.dil_mode / stamp
+    logger = ExperimentLogger(session_dir / "log.csv")
+    logger.write_metadata(
+        {
+            "case_id": case_id,
+            "paper_case_id": args.paper_case_id,
+            "dil_mode": args.dil_mode,
+            "input": args.input,
+            "policy_key": replay_policy_key,
+            "policy_mode": args.policy_mode,
+            "rollout_js": str(args.rollout_js),
+            "unity_host": args.unity_host,
+            "unity_port": args.unity_port,
+            "dataset_frame_rate": repo.frame_rate,
+            "source_rate": source_rate,
+            "runtime_rate": args.runtime_rate,
+            "driver_accel_gain": args.driver_accel_gain,
+            "dil_extend_start_s": 0.0 if args.no_dil_extension else args.dil_extend_start_s,
+            "dil_extend_end_s": 0.0 if args.no_dil_extension else args.dil_extend_end_s,
+            "output_log": str(session_dir / "log.csv"),
+        }
+    )
+    (session_dir / "config.txt").write_text(
+        "\n".join(
+            [
+                f"case_id={case_id}",
+                f"paper_case_id={args.paper_case_id}",
+                f"input={args.input}",
+                f"dil_mode={args.dil_mode}",
+                f"policy_key={replay_policy_key}",
+                f"policy_mode={args.policy_mode}",
+                f"rollout_js={args.rollout_js}",
+                f"unity_host={args.unity_host}",
+                f"unity_port={args.unity_port}",
+                f"dataset_frame_rate={repo.frame_rate}",
+                f"source_rate={source_rate}",
+                f"runtime_rate={args.runtime_rate}",
+                f"driver_accel_gain={args.driver_accel_gain}",
+                f"dil_extend_start_s={0.0 if args.no_dil_extension else args.dil_extend_start_s}",
+                f"dil_extend_end_s={0.0 if args.no_dil_extension else args.dil_extend_end_s}",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    dt = 1.0 / args.runtime_rate
+    start = time.perf_counter()
+    next_tick = start
+    if args.paper_case_id is not None:
+        print(f"[DIL] Paper Case {args.paper_case_id} -> highD injected rollout case {case_id}")
+    print(f"[DIL] Running case {case_id}: {case['record'].get('case_name', '')}")
+    print(f"[DIL] Mode: {args.dil_mode}")
+    print(f"[DIL] Source trajectory rate: {source_rate:.2f} Hz; duration ≈ {runner.duration_s:.2f} s")
+    if replay_policy_key:
+        print(f"[DIL] Replaying policy: {replay_policy_key} ({args.policy_mode})")
+    print(f"[DIL] Log: {session_dir / 'log.csv'}")
+    print("[DIL] Keyboard: arrows/WASD steer and pedals, Space brake, R reset, Q quit.")
+    if args.wait_for_unity and not args.no_udp:
+        print(f"[DIL] Waiting for Unity ready packet on UDP {args.unity_input_port}...")
+        while ready_receiver is not None and not ready_receiver.is_ready():
+            time.sleep(0.02)
+        runner.reset()
+        start = time.perf_counter()
+        next_tick = start
+        print("[DIL] Unity ready. Starting simulation at t=0.")
+    if args.start_delay_s > 0:
+        print(f"[DIL] Waiting {args.start_delay_s:.1f}s before publishing states...")
+        time.sleep(args.start_delay_s)
+        start = time.perf_counter()
+        next_tick = start
+    try:
+        while True:
+            command = zero_command() if adapter is None else adapter.read()
+            if command.quit:
+                break
+            state = runner.step(command)
+            publisher.send(state)
+            logger.write(state)
+
+            if runner.step_index % int(max(1, args.runtime_rate)) == 1:
+                ego = state["ego"]
+                print(
+                    f"t={state['time_s']:.1f}s "
+                    f"v={ego['speed']:.2f}m/s "
+                    f"steer={ego['steer']:.3f} "
+                    f"lambda={state['authority']['rl']:.2f} "
+                    f"front={state['risk']['front_distance_m']:.1f}m "
+                    f"collision={state['safety']['collision']}"
+                )
+
+            if args.duration_s > 0 and (time.perf_counter() - start) >= args.duration_s:
+                break
+            next_tick += dt
+            sleep_s = next_tick - time.perf_counter()
+            if sleep_s > 0:
+                time.sleep(sleep_s)
+            else:
+                next_tick = time.perf_counter()
+    finally:
+        logger.close()
+        publisher.close()
+        if ready_receiver is not None and ready_receiver is not adapter:
+            ready_receiver.close()
+        if hasattr(adapter, "close"):
+            adapter.close()
+    print("[DIL] Finished.")
+
+
+if __name__ == "__main__":
+    main()

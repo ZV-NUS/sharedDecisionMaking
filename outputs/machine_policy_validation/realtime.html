@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Work2 Realtime Traffic Validation</title>
+  <script src="realtime_rollouts.js"></script>
+  <style>
+    :root {
+      --bg: #111827;
+      --panel: #172033;
+      --panel2: #0f172a;
+      --line: #334155;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --ego: #38bdf8;
+      --danger: #ef4444;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+    .app {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      grid-template-rows: 64px 1fr;
+      height: 100vh;
+    }
+    header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: #0b1120;
+      border-bottom: 1px solid var(--line);
+    }
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+    .header-meta {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .stage {
+      position: relative;
+      background: #1f2937;
+      min-width: 0;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    aside {
+      padding: 16px;
+      background: var(--panel2);
+      border-left: 1px solid var(--line);
+      overflow-y: auto;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 15px;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    button, select {
+      height: 36px;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      background: #0f172a;
+      color: var(--text);
+      font-size: 14px;
+    }
+    button {
+      cursor: pointer;
+      font-weight: 700;
+    }
+    button:hover, select:hover { border-color: #64748b; }
+    .wide { grid-column: 1 / -1; }
+    .metric {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+      font-size: 13px;
+    }
+    .metric:last-child { border-bottom: 0; }
+    .label { color: var(--muted); }
+    .value { font-weight: 700; text-align: right; }
+    .decision {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      height: 30px;
+      border-radius: 6px;
+      background: #0ea5e9;
+      color: #00111c;
+      font-weight: 800;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 72px;
+      height: 28px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 12px;
+    }
+    .ok { background: rgba(34, 197, 94, 0.16); color: #86efac; }
+    .bad { background: rgba(239, 68, 68, 0.16); color: #fca5a5; }
+    input[type="range"] { width: 100%; }
+    .legend {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .swatch {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      margin-right: 6px;
+      vertical-align: -1px;
+    }
+    @media (max-width: 960px) {
+      body { overflow: auto; }
+      .app { grid-template-columns: 1fr; grid-template-rows: 56px 64vh auto; height: auto; min-height: 100vh; }
+      aside { border-left: 0; border-top: 1px solid var(--line); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Work2 机器决策实时交通验证</h1>
+      <div class="header-meta">highD 注入场景 · 规则/APF 决策 · 运动学执行</div>
+    </header>
+    <section class="stage">
+      <canvas id="scene"></canvas>
+    </section>
+    <aside>
+      <div class="panel">
+        <h2>仿真控制</h2>
+        <div class="controls">
+          <button id="play">暂停</button>
+          <button id="reset">重置</button>
+          <select id="caseSelect" class="wide"></select>
+          <label class="wide label">播放速度 <span id="speedText">1.0x</span></label>
+          <input id="speed" class="wide" type="range" min="0.2" max="3" step="0.1" value="1" />
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>机器决策状态</h2>
+        <div class="metric"><span class="label">当前 case</span><span id="caseName" class="value"></span></div>
+        <div class="metric"><span class="label">机器决策</span><span id="decision" class="decision">S</span></div>
+        <div class="metric"><span class="label">真实 highD 标签</span><span id="truth" class="value">S</span></div>
+        <div class="metric"><span class="label">事件帧</span><span id="eventFrame" class="value">-</span></div>
+        <div class="metric"><span class="label">仿真时间</span><span id="time" class="value">0.00 s</span></div>
+        <div class="metric"><span class="label">速度</span><span id="vehSpeed" class="value">0.00 m/s</span></div>
+        <div class="metric"><span class="label">加速度</span><span id="accel" class="value">0.00 m/s²</span></div>
+        <div class="metric"><span class="label">前轮转角</span><span id="steer" class="value">0.000 rad</span></div>
+        <div class="metric"><span class="label">当前前车距离</span><span id="frontGap" class="value">-</span></div>
+      </div>
+
+      <div class="panel">
+        <h2>可靠性检查</h2>
+        <div class="metric"><span class="label">碰撞状态</span><span id="collision" class="badge ok">无碰撞</span></div>
+        <div class="metric"><span class="label">最小间距</span><span id="clearance" class="value">-</span></div>
+        <div class="metric"><span class="label">最近对象</span><span id="slot" class="value">-</span></div>
+        <div class="metric"><span class="label">front risk</span><span id="risk" class="value">-</span></div>
+        <div class="metric"><span class="label">THW / DHW</span><span id="headway" class="value">-</span></div>
+      </div>
+
+      <div class="panel">
+        <h2>图例</h2>
+        <div class="legend">
+          <div><span class="swatch" style="background:#38bdf8"></span>机器车</div>
+          <div><span class="swatch" style="background:#f97316"></span>周围车</div>
+          <div><span class="swatch" style="background:#94a3b8"></span>人类未来轨迹</div>
+          <div><span class="swatch" style="background:#ef4444"></span>风险/碰撞</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const data = window.MACHINE_POLICY_ROLLOUTS;
+    const canvas = document.getElementById("scene");
+    const ctx = canvas.getContext("2d");
+    const playBtn = document.getElementById("play");
+    const resetBtn = document.getElementById("reset");
+    const caseSelect = document.getElementById("caseSelect");
+    const speedRange = document.getElementById("speed");
+    const speedText = document.getElementById("speedText");
+    const el = id => document.getElementById(id);
+
+    let caseIndex = 0;
+    let frame = 0;
+    let playing = true;
+    let lastTs = 0;
+    let frameCarry = 0;
+    let simSpeed = 1;
+
+    const colors = ["#f97316", "#a78bfa", "#facc15", "#fb7185", "#34d399", "#c084fc"];
+
+    for (let i = 0; i < data.cases.length; i++) {
+      const r = data.cases[i].record;
+      const option = document.createElement("option");
+      option.value = String(i);
+      option.textContent = `case ${r.case} · idx ${r.sample_index} · ${r.machine_decision}`;
+      caseSelect.appendChild(option);
+    }
+
+    function resize() {
+      const box = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.floor(box.width * ratio));
+      canvas.height = Math.max(1, Math.floor(box.height * ratio));
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    playBtn.addEventListener("click", () => {
+      playing = !playing;
+      playBtn.textContent = playing ? "暂停" : "播放";
+    });
+    resetBtn.addEventListener("click", () => {
+      frame = 0;
+      frameCarry = 0;
+    });
+    caseSelect.addEventListener("change", () => {
+      caseIndex = Number(caseSelect.value);
+      frame = 0;
+      frameCarry = 0;
+    });
+    speedRange.addEventListener("input", () => {
+      simSpeed = Number(speedRange.value);
+      speedText.textContent = `${simSpeed.toFixed(1)}x`;
+    });
+
+    function worldBounds(c) {
+      const xs = [];
+      const ys = [];
+      for (const p of c.ego.xy) { xs.push(p[0]); ys.push(p[1]); }
+      for (const p of c.human_future) { xs.push(p[0]); ys.push(p[1]); }
+      for (const n of c.neighbors) {
+        for (const p of n.xy) { xs.push(p[0]); ys.push(p[1]); }
+      }
+      return {
+        minX: Math.min(...xs, -20) - 15,
+        maxX: Math.max(...xs, 100) + 20,
+        minY: Math.min(...ys, -9) - 3,
+        maxY: Math.max(...ys, 9) + 3,
+      };
+    }
+
+    function makeTransform(bounds, w, h) {
+      const sx = w / Math.max(bounds.maxX - bounds.minX, 1);
+      const sy = h / Math.max(bounds.maxY - bounds.minY, 1);
+      const scale = Math.min(sx, sy) * 0.92;
+      const ox = (w - (bounds.maxX - bounds.minX) * scale) * 0.5;
+      const oy = (h - (bounds.maxY - bounds.minY) * scale) * 0.5;
+      return {
+        p: ([x, y]) => [ox + (x - bounds.minX) * scale, h - (oy + (y - bounds.minY) * scale)],
+        s: v => v * scale,
+      };
+    }
+
+    function drawRoad(T, bounds, w, h) {
+      ctx.fillStyle = "#263241";
+      ctx.fillRect(0, 0, w, h);
+      const laneWidth = data.lane_width_m;
+      ctx.lineWidth = 1;
+      for (let y = -12.25; y <= 12.25; y += laneWidth) {
+        const a = T.p([bounds.minX, y]);
+        const b = T.p([bounds.maxX, y]);
+        ctx.beginPath();
+        ctx.setLineDash([]);
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.globalAlpha = 0.22;
+        ctx.moveTo(a[0], a[1]);
+        ctx.lineTo(b[0], b[1]);
+        ctx.stroke();
+      }
+      for (let y = -10.5; y <= 10.5; y += laneWidth) {
+        const a = T.p([bounds.minX, y]);
+        const b = T.p([bounds.maxX, y]);
+        ctx.beginPath();
+        ctx.setLineDash([14, 14]);
+        ctx.strokeStyle = Math.abs(y) < 0.01 ? "#67e8f9" : "#93c5fd";
+        ctx.globalAlpha = Math.abs(y) < 0.01 ? 0.48 : 0.34;
+        ctx.moveTo(a[0], a[1]);
+        ctx.lineTo(b[0], b[1]);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+    }
+
+    function drawPolyline(points, T, color, alpha, width, until = points.length) {
+      if (!points.length) return;
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = alpha;
+      ctx.lineWidth = width;
+      const first = T.p(points[0]);
+      ctx.moveTo(first[0], first[1]);
+      for (let i = 1; i < until; i++) {
+        const p = T.p(points[i]);
+        ctx.lineTo(p[0], p[1]);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    function drawVehicle(xy, yaw, length, width, T, color, label, danger = false) {
+      const [cx, cy] = T.p(xy);
+      const L = Math.max(T.s(length), 18);
+      const W = Math.max(T.s(width), 9);
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-yaw);
+      ctx.fillStyle = color;
+      ctx.strokeStyle = danger ? "#ef4444" : "#e2e8f0";
+      ctx.lineWidth = danger ? 3 : 1;
+      ctx.beginPath();
+      ctx.roundRect(-L / 2, -W / 2, L, W, 4);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "rgba(15,23,42,0.72)";
+      ctx.fillRect(L * 0.12, -W * 0.35, L * 0.22, W * 0.7);
+      ctx.restore();
+      ctx.fillStyle = "#e5e7eb";
+      ctx.font = "12px Arial";
+      ctx.fillText(label, cx + 8, cy - 8);
+    }
+
+    function updatePanel(c) {
+      const r = c.record;
+      const i = Math.min(frame, c.ego.xy.length - 1);
+      el("caseName").textContent = `${r.case} / idx ${r.sample_index}`;
+      el("decision").textContent = r.machine_decision;
+      el("truth").textContent = r.true_decision;
+      el("eventFrame").textContent = String(r.machine_event_idx);
+      el("time").textContent = `${(i / data.frame_rate).toFixed(2)} s`;
+      el("vehSpeed").textContent = `${c.ego.speed[i].toFixed(2)} m/s`;
+      el("accel").textContent = `${c.ego.acceleration[i].toFixed(2)} m/s²`;
+      el("steer").textContent = `${c.ego.steer[i].toFixed(4)} rad`;
+      const front = c.neighbors.find(n => n.name === "front");
+      if (front) {
+        const gap = front.xy[i][0] - c.ego.xy[i][0] - 4.6;
+        el("frontGap").textContent = `${Math.max(gap, 0).toFixed(1)} m`;
+      } else {
+        el("frontGap").textContent = "无前车";
+      }
+      el("clearance").textContent = `${r.min_clearance_m.toFixed(2)} m @ frame ${r.min_clearance_frame}`;
+      el("slot").textContent = r.min_clearance_slot;
+      el("risk").textContent = r.front_risk.toFixed(3);
+      el("headway").textContent = `${r.thw.toFixed(2)} s / ${r.dhw.toFixed(1)} m`;
+      const collision = el("collision");
+      collision.textContent = r.collision ? "有碰撞风险" : "无碰撞";
+      collision.className = `badge ${r.collision ? "bad" : "ok"}`;
+    }
+
+    function render() {
+      const c = data.cases[caseIndex];
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      const bounds = worldBounds(c);
+      const T = makeTransform(bounds, w, h);
+      const i = Math.min(frame, c.ego.xy.length - 1);
+      drawRoad(T, bounds, w, h);
+      drawPolyline(c.human_future, T, "#cbd5e1", 0.48, 2);
+      drawPolyline(c.ego.xy, T, "#38bdf8", 0.25, 2);
+      drawPolyline(c.ego.xy, T, "#38bdf8", 1, 3, i + 1);
+      for (const n of c.neighbors) {
+        drawPolyline(n.xy, T, colors[n.slot % colors.length], 0.38, 1.5, i + 1);
+      }
+      for (const n of c.neighbors) {
+        const dangerous = c.record.collision && n.name === c.record.min_clearance_slot && i >= c.record.min_clearance_frame - 6;
+        drawVehicle(n.xy[i], 0, n.length, n.width, T, colors[n.slot % colors.length], n.name, dangerous);
+      }
+      const dangerEgo = c.record.collision && i >= c.record.min_clearance_frame - 6;
+      drawVehicle(c.ego.xy[i], c.ego.yaw[i], c.ego.length, c.ego.width, T, dangerEgo ? "#ef4444" : "#38bdf8", "machine", dangerEgo);
+      if (c.record.machine_decision !== "S") {
+        const e = Math.min(c.record.machine_event_idx, c.ego.xy.length - 1);
+        const p = T.p(c.ego.xy[e]);
+        ctx.strokeStyle = "#f43f5e";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(p[0], p[1], 10, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      updatePanel(c);
+    }
+
+    function animate(ts) {
+      if (!lastTs) lastTs = ts;
+      const dt = Math.min((ts - lastTs) / 1000, 0.1);
+      lastTs = ts;
+      const c = data.cases[caseIndex];
+      if (playing) {
+        frameCarry += dt * data.frame_rate * simSpeed;
+        while (frameCarry >= 1) {
+          frame++;
+          frameCarry -= 1;
+          if (frame >= c.ego.xy.length) frame = 0;
+        }
+      }
+      render();
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

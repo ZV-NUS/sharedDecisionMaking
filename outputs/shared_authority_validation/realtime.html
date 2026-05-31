@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <title>Work1-4 Shared Authority Validation</title>
+  <script src="shared_authority_rollouts.js?v=1780116403"></script>
+  <style>
+    :root { --bg:#0f172a; --panel:#111827; --line:#334155; --text:#e5e7eb; --muted:#94a3b8; --ego:#38bdf8; --ref:#f59e0b; --human:#cbd5e1; --risk:#ef4444; }
+    * { box-sizing:border-box; }
+    body { margin:0; height:100vh; overflow:hidden; font-family:Arial,"Microsoft YaHei",sans-serif; color:var(--text); background:var(--bg); }
+    .app { display:grid; grid-template-columns:1fr 380px; grid-template-rows:58px 1fr; height:100vh; }
+    header { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; padding:0 18px; background:#020617; border-bottom:1px solid var(--line); }
+    h1 { font-size:19px; margin:0; letter-spacing:0; }
+    .meta { color:var(--muted); font-size:13px; }
+    .stage { min-width:0; position:relative; background:#1f2937; }
+    canvas { display:block; width:100%; height:100%; }
+    aside { background:#020617; border-left:1px solid var(--line); padding:14px; overflow:auto; }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px; margin-bottom:12px; }
+    h2 { margin:0 0 10px; font-size:15px; }
+    .controls { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+    button,select { height:34px; border-radius:6px; border:1px solid #475569; background:#0f172a; color:var(--text); font-size:13px; }
+    button { cursor:pointer; font-weight:700; }
+    .wide { grid-column:1/-1; }
+    input[type=range] { width:100%; }
+    .metric { display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px solid rgba(148,163,184,.16); font-size:13px; }
+    .metric:last-child { border-bottom:0; }
+    .label { color:var(--muted); }
+    .value { font-weight:700; text-align:right; }
+    .badge { padding:5px 8px; border-radius:999px; font-weight:800; font-size:12px; }
+    .ok { background:rgba(34,197,94,.16); color:#86efac; }
+    .bad { background:rgba(239,68,68,.16); color:#fca5a5; }
+    .legend { display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:12px; color:var(--muted); }
+    .sw { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+    .mini { height:128px; width:100%; background:#0f172a; border:1px solid #334155; border-radius:6px; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Work1-4 Shared Authority Validation</h1>
+    <div class="meta">highD traffic injection | Work1 human intent | Work2 machine intent | Work3 reference authority | Work4 RL authority</div>
+  </header>
+  <section class="stage"><canvas id="scene"></canvas></section>
+  <aside>
+    <div class="panel">
+      <h2>Simulation</h2>
+      <div class="controls">
+        <button id="play">Pause</button><button id="reset">Reset</button>
+        <select id="caseSelect" class="wide"></select>
+        <label class="wide label">Playback speed <span id="speedText">1.0x</span></label>
+        <input id="speed" class="wide" type="range" min="0.2" max="3" step="0.1" value="1" />
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Decision and Authority</h2>
+      <div class="metric"><span class="label">case</span><span id="caseName" class="value"></span></div>
+      <div class="metric"><span class="label">highD / human / machine / RL</span><span id="decisions" class="value"></span></div>
+      <div class="metric"><span class="label">current lambda_h_ref(t)</span><span id="refAuth" class="value"></span></div>
+      <div class="metric"><span class="label">current lambda_h_RL(t)</span><span id="rlAuth" class="value"></span></div>
+      <div class="metric"><span class="label">mean lambda_h_ref / lambda_h_RL</span><span id="meanAuth" class="value"></span></div>
+      <div class="metric"><span class="label">T_m_to_h / T_h_to_m</span><span id="trust" class="value"></span></div>
+      <canvas id="signals" class="mini"></canvas>
+    </div>
+    <div class="panel">
+      <h2>Execution State</h2>
+      <div class="metric"><span class="label">time</span><span id="time" class="value">0.00 s</span></div>
+      <div class="metric"><span class="label">speed / acceleration</span><span id="motion" class="value"></span></div>
+      <div class="metric"><span class="label">front gap / relative speed</span><span id="frontState" class="value"></span></div>
+      <div class="metric"><span class="label">front-wheel angle</span><span id="steer" class="value"></span></div>
+      <div class="metric"><span class="label">reference collision</span><span id="refCollision" class="badge ok"></span></div>
+      <div class="metric"><span class="label">RL collision</span><span id="rlCollision" class="badge ok"></span></div>
+      <div class="metric"><span class="label">MPC-lite collision</span><span id="ctrlCollision" class="badge ok"></span></div>
+      <div class="metric"><span class="label">MPC-lite min. clearance</span><span id="ctrlClearance" class="value"></span></div>
+      <div class="metric"><span class="label">beta / yaw-rate max</span><span id="ctrlStable" class="value"></span></div>
+      <div class="metric"><span class="label">mean risk ref to RL</span><span id="risk" class="value"></span></div>
+      <div class="metric"><span class="label">max risk ref to RL</span><span id="maxRisk" class="value"></span></div>
+      <div class="metric"><span class="label">reward ref to RL</span><span id="reward" class="value"></span></div>
+    </div>
+  </aside>
+</div>
+<script>
+const data = window.SHARED_AUTHORITY_ROLLOUTS;
+const canvas = document.getElementById("scene"), ctx = canvas.getContext("2d");
+const sigCanvas = document.getElementById("signals"), sigCtx = sigCanvas.getContext("2d");
+const $ = id => document.getElementById(id);
+let caseIndex=0, frame=0, carry=0, playing=true, last=0, simSpeed=1;
+const neighborColor="#7e8794",neighborTrail="#5f6b7a";
+const egoColors={human:"#60a5fa",machine:"#f59e0b",ra:"#7B61FF",rl:"#22c55e",mpc:"#ef4444"};
+for(let i=0;i<data.cases.length;i++){const c=data.cases[i],o=document.createElement("option");o.value=i;o.textContent=`case ${c.record.case_id||i+1} | ${c.record.case_name||("idx "+c.record.sample_index)} | RL ${c.record.rl_shared_decision}`;$("caseSelect").appendChild(o);}
+function resize(){const r=window.devicePixelRatio||1,b=canvas.getBoundingClientRect();canvas.width=Math.floor(b.width*r);canvas.height=Math.floor(b.height*r);ctx.setTransform(r,0,0,r,0,0);const sb=sigCanvas.getBoundingClientRect();sigCanvas.width=Math.floor(sb.width*r);sigCanvas.height=Math.floor(sb.height*r);sigCtx.setTransform(r,0,0,r,0,0);}
+window.addEventListener("resize",resize); resize();
+$("play").onclick=()=>{playing=!playing;$("play").textContent=playing?"Pause":"Play";};
+$("reset").onclick=()=>{frame=0;carry=0;};
+$("caseSelect").onchange=()=>{caseIndex=Number($("caseSelect").value);frame=0;carry=0;};
+$("speed").oninput=()=>{simSpeed=Number($("speed").value);$("speedText").textContent=`${simSpeed.toFixed(1)}x`;};
+function bounds(c){let xs=[],ys=[];for(const group of [c.ego.xy,c.ra_rldm_ego?c.ra_rldm_ego.xy:[],c.controller_ego.xy,(c.machine_ego||c.reference_ego).xy,c.human_pred_ego.xy,c.human_future]) for(const p of group){xs.push(p[0]);ys.push(p[1]);} for(const n of c.neighbors) for(const p of n.xy){xs.push(p[0]);ys.push(p[1]);} if(c.road&&c.road.lane_markings) for(const y of c.road.lane_markings){ys.push(y);} return {minX:Math.min(...xs)-18,maxX:Math.max(...xs)+22,minY:Math.min(...ys)-4,maxY:Math.max(...ys)+4};}
+function trans(b,w,h){const sx=Math.min(w/(b.maxX-b.minX),h/(b.maxY-b.minY))*0.92,sy=Math.min(h/(b.maxY-b.minY)*0.92,sx*4.0),ox=(w-(b.maxX-b.minX)*sx)/2,oy=(h-(b.maxY-b.minY)*sy)/2;return {p:([x,y])=>[ox+(x-b.minX)*sx,oy+(y-b.minY)*sy],s:v=>v*sx,sy:v=>v*sy};}
+function road(T,b,w,h,c){ctx.fillStyle="#2f3742";ctx.fillRect(0,0,w,h);const marks=(c.road&&c.road.lane_markings&&c.road.lane_markings.length>=2)?c.road.lane_markings:[-1.5*data.lane_width_m,-0.5*data.lane_width_m,0.5*data.lane_width_m,1.5*data.lane_width_m];const y1=T.p([0,Math.min(...marks)])[1],y2=T.p([0,Math.max(...marks)])[1];ctx.fillStyle="#303842";ctx.fillRect(0,Math.min(y1,y2),w,Math.abs(y2-y1));for(let j=0;j<marks.length;j++){const y=marks[j],a=T.p([b.minX,y]),d=T.p([b.maxX,y]);ctx.beginPath();const boundary=j===0||j===marks.length-1;ctx.setLineDash(boundary?[]:[24,18]);ctx.strokeStyle=boundary?"#f8fafc":"#e5e7eb";ctx.globalAlpha=boundary?0.95:0.78;ctx.lineWidth=boundary?3:2;ctx.moveTo(a[0],a[1]);ctx.lineTo(d[0],d[1]);ctx.stroke();}ctx.setLineDash([]);ctx.globalAlpha=1;ctx.lineWidth=1;}
+function poly(points,T,color,alpha,width,until=points.length){if(!points.length)return;ctx.beginPath();ctx.strokeStyle=color;ctx.globalAlpha=alpha;ctx.lineWidth=width;let p=T.p(points[0]);ctx.moveTo(p[0],p[1]);for(let i=1;i<until;i++){p=T.p(points[i]);ctx.lineTo(p[0],p[1]);}ctx.stroke();ctx.globalAlpha=1;}
+function car(xy,yaw,L,W,T,color,label,bad=false){const [x,y]=T.p(xy),w=T.sy(W),l=w*(L/Math.max(W,0.1));ctx.save();ctx.translate(x,y);ctx.rotate(yaw);ctx.fillStyle=color;ctx.strokeStyle=bad?"#ef4444":"#e2e8f0";ctx.lineWidth=bad?3:1;ctx.beginPath();ctx.roundRect(-l/2,-w/2,l,w,Math.min(4,w/3));ctx.fill();ctx.stroke();ctx.fillStyle="rgba(255,255,255,.72)";ctx.beginPath();ctx.moveTo(l/2-2,0);ctx.lineTo(l/2-Math.max(5,l*.18),-w*.28);ctx.lineTo(l/2-Math.max(5,l*.18),w*.28);ctx.closePath();ctx.fill();ctx.restore();ctx.fillStyle="#e5e7eb";ctx.font="12px Arial";ctx.fillText(label,x+8,y-8);}
+function ghostCar(xy,yaw,L,W,T,color,label,bad=false){const [x,y]=T.p(xy),l=T.s(L)*0.72,w=T.sy(W)*0.72;ctx.save();ctx.translate(x,y);ctx.rotate(yaw);ctx.globalAlpha=.58;ctx.fillStyle=color;ctx.strokeStyle=bad?"#ef4444":"#e2e8f0";ctx.lineWidth=bad?2:1;ctx.beginPath();ctx.roundRect(-l/2,-w/2,l,w,Math.min(4,w/3));ctx.fill();ctx.stroke();ctx.fillStyle="rgba(255,255,255,.75)";ctx.beginPath();ctx.moveTo(l/2-2,0);ctx.lineTo(l/2-Math.max(5,l*.18),-w*.28);ctx.lineTo(l/2-Math.max(5,l*.18),w*.28);ctx.closePath();ctx.fill();ctx.restore();ctx.globalAlpha=1;ctx.fillStyle="#e5e7eb";ctx.font="11px Arial";ctx.fillText(label,x+8,y-8);}
+function yawAt(points,i,fallback=0,span=6){let a=Math.max(0,i-span),b=Math.min(points.length-1,i+span);while(a<i&&Math.hypot(points[i][0]-points[a][0],points[i][1]-points[a][1])<0.6)a++;while(b>i&&Math.hypot(points[b][0]-points[i][0],points[b][1]-points[i][1])<0.6)b--;if(a===b)return fallback;const dx=points[b][0]-points[a][0],dy=points[b][1]-points[a][1];if(Math.hypot(dx,dy)<0.8)return fallback;const yaw=Math.atan2(dy,dx);return Math.abs(yaw)<0.012?0:yaw;}
+function clampYaw(yaw,limit=0.14){return Math.max(-limit,Math.min(limit,yaw));}
+function drawSignals(c,i){const w=sigCanvas.clientWidth,h=sigCanvas.clientHeight;sigCtx.clearRect(0,0,w,h);sigCtx.fillStyle="#0f172a";sigCtx.fillRect(0,0,w,h);function line(arr,color){sigCtx.beginPath();sigCtx.strokeStyle=color;sigCtx.lineWidth=2;arr.forEach((v,k)=>{const x=k/(arr.length-1)*w,y=h-(Math.max(0,Math.min(1,v))*h); if(k===0)sigCtx.moveTo(x,y);else sigCtx.lineTo(x,y);});sigCtx.stroke();}line(c.signals.authority_ref,"#f59e0b");line(c.signals.authority_rl,"#38bdf8");line(c.signals.environment_urgency,"#ef4444");sigCtx.strokeStyle="#e5e7eb";sigCtx.beginPath();const x=i/(c.signals.authority_rl.length-1)*w;sigCtx.moveTo(x,0);sigCtx.lineTo(x,h);sigCtx.stroke();}
+function frontInfo(c,i){const f=c.neighbors.find(n=>n.slot===0);if(!f)return "no front vehicle";const gap=f.xy[i][0]-c.controller_ego.xy[i][0]-0.5*(f.length+c.controller_ego.length);const prev=Math.max(0,i-1);const fv=(f.xy[i][0]-f.xy[prev][0])*data.frame_rate;const ev=(c.controller_ego.xy[i][0]-c.controller_ego.xy[prev][0])*data.frame_rate;return `${Math.max(gap,0).toFixed(1)} m / ${(fv-ev).toFixed(1)} m/s`;}
+function panel(c,i){const m=c.metrics,r=c.record;$("caseName").textContent=`case ${r.case_id||""} ${r.case_name||""} | idx ${r.sample_index} rec ${r.recording_id} veh ${r.vehicle_id} | expected ${r.expected||"-"}`;$("decisions").textContent=`${r.true_decision} / ${r.human_decision} / ${r.machine_decision} / ${r.rl_shared_decision}`;$("refAuth").textContent=c.signals.authority_ref[i].toFixed(3);$("rlAuth").textContent=c.signals.authority_rl[i].toFixed(3);$("meanAuth").textContent=`${m.authority_ref_mean.toFixed(3)} / ${m.authority_rl_mean.toFixed(3)}`;$("trust").textContent=`${m.trust_machine_to_human_mean.toFixed(3)} / ${m.trust_human_to_machine_mean.toFixed(3)}`;$("time").textContent=`${(i/data.frame_rate).toFixed(2)} s`;$("motion").textContent=`${c.controller_ego.speed[i].toFixed(2)} m/s / ${c.controller_ego.acceleration[i].toFixed(2)} m/s^2`;$("frontState").textContent=frontInfo(c,i);$("steer").textContent=`${c.controller_ego.steer[i].toFixed(4)} rad`;$("risk").textContent=`${m.reference_risk_mean.toFixed(4)} -> ${m.rl_risk_mean.toFixed(4)}`;$("maxRisk").textContent=`${m.reference_risk_max.toFixed(4)} -> ${m.rl_risk_max.toFixed(4)}`;$("reward").textContent=`${m.reference_reward.toFixed(3)} -> ${m.rl_reward.toFixed(3)}`;$("ctrlClearance").textContent=`${m.controller_min_clearance_m.toFixed(2)} m`;$("ctrlStable").textContent=`${m.controller_max_abs_beta_rad.toFixed(3)} / ${m.controller_max_abs_yaw_rate_rps.toFixed(3)}`;for(const id of ["refCollision","rlCollision","ctrlCollision"]){const bad=id==="refCollision"?r.reference_collision:(id==="rlCollision"?r.rl_collision:r.controller_collision);$(id).textContent=bad?"collision":"no collision";$(id).className=`badge ${bad?"bad":"ok"}`;}drawSignals(c,i);}
+function render(){const c=data.cases[caseIndex],machine=c.machine_ego||c.reference_ego,ra=c.ra_rldm_ego,w=canvas.clientWidth,h=canvas.clientHeight,i=Math.min(frame,c.ego.xy.length-1),b=bounds(c),T=trans(b,w,h);road(T,b,w,h,c);poly(c.human_pred_ego.xy,T,egoColors.human,.60,2);poly(machine.xy,T,egoColors.machine,.75,2.4);if(ra)poly(ra.xy,T,egoColors.ra,.40,2.4);poly(c.ego.xy,T,egoColors.rl,.35,2.2);poly(c.controller_ego.xy,T,egoColors.mpc,.25,2);poly(c.controller_ego.xy,T,egoColors.mpc,1,3,i+1);for(const n of c.neighbors){poly(n.xy,T,neighborTrail,.34,1.4,i+1);}for(const n of c.neighbors){car(n.xy[i],clampYaw(yawAt(n.xy,i,0,12)),n.length,n.width,T,neighborColor,n.name);}ghostCar(c.human_pred_ego.xy[i],yawAt(c.human_pred_ego.xy,i,0,6),4.6,1.8,T,egoColors.human,"Human");ghostCar(machine.xy[i],machine.yaw?machine.yaw[i]:yawAt(machine.xy,i,0,6),machine.length||4.6,machine.width||1.8,T,egoColors.machine,"Machine");if(ra)ghostCar(ra.xy[i],ra.yaw?ra.yaw[i]:yawAt(ra.xy,i,0,6),ra.length,ra.width,T,egoColors.ra,"RA-RLDM",ra.collision);ghostCar(c.ego.xy[i],c.ego.yaw?c.ego.yaw[i]:yawAt(c.ego.xy,i,0,6),c.ego.length,c.ego.width,T,egoColors.rl,"TA-RLDM",c.ego.collision);car(c.controller_ego.xy[i],c.controller_ego.yaw?c.controller_ego.yaw[i]:yawAt(c.controller_ego.xy,i,0,6),c.controller_ego.length,c.controller_ego.width,T,c.controller_ego.collision?"#ef4444":egoColors.mpc,"TA-RL-ARMPC",c.controller_ego.collision);panel(c,i);}
+function loop(ts){if(!last)last=ts;const dt=Math.min((ts-last)/1000,.1);last=ts;const c=data.cases[caseIndex];if(playing){carry+=dt*data.frame_rate*simSpeed;while(carry>=1){frame++;carry--;if(frame>=c.ego.xy.length)frame=0;}}render();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

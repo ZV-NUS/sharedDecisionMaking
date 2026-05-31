@@ -1,0 +1,19 @@
+base_config: configs/work3_authority.yaml
+
+optimization:
+  split: val
+  max_batches: 2
+  iterations: 3
+  candidates: 10
+  elite_fraction: 0.3
+  init_std: 0.18
+  min_std: 0.02
+  seed: 2026
+  output_dir: outputs/work3_authority_optimization
+
+objective_weights:
+  safety: 8.0
+  efficiency: 1.0
+  comfort: 0.25
+  smooth: 0.5
+  target_speed_mps: 31.0

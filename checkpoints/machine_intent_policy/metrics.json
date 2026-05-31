@@ -1,0 +1,221 @@
+{
+  "train": {
+    "loss": 0.0,
+    "decision_accuracy": 0.41106770833333334,
+    "decision_macro_f1": 0.353339284658432,
+    "decision_precision_LSR": [
+      0.2238890528678894,
+      0.45664817094802856,
+      0.40655234456062317
+    ],
+    "decision_recall_LSR": [
+      0.12205848097801208,
+      0.5920693278312683,
+      0.3681800067424774
+    ],
+    "decision_f1_LSR": [
+      0.15798671543598175,
+      0.5156152844429016,
+      0.38641589879989624
+    ],
+    "future_decision_accuracy": 0.7089008680555555,
+    "future_event_accuracy": 0.41106770833333334,
+    "future_event_macro_f1": 0.353339284658432,
+    "future_event_recall_LSR": [
+      0.12205848097801208,
+      0.5920693278312683,
+      0.3681800067424774
+    ],
+    "future_event_confusion_matrix": [
+      [
+        1582,
+        10345,
+        1034
+      ],
+      [
+        5049,
+        13662,
+        4364
+      ],
+      [
+        435,
+        5911,
+        3698
+      ]
+    ],
+    "lane_change_event_recall": 0.22951532275592262,
+    "lane_change_event_precision": 0.32669224105927486,
+    "lane_change_event_time_mae_frames": 41.65814393939394,
+    "speed_rmse": 4.958278573314561,
+    "steer_rmse_rad": 0.022080937441057942,
+    "confusion_matrix": [
+      [
+        1582,
+        10345,
+        1034
+      ],
+      [
+        5049,
+        13662,
+        4364
+      ],
+      [
+        435,
+        5911,
+        3698
+      ]
+    ],
+    "machine_lane_change_rate": 0.35073784722222223,
+    "machine_high_risk_lane_change_rate": 0.742977980048729,
+    "machine_unsafe_lane_change_rate": 0.0,
+    "machine_mean_abs_steer_rad": 0.003727978683842553,
+    "machine_mean_abs_accel_mps2": 1.1077099483913846,
+    "machine_max_abs_steer_rad": 0.44999998807907104
+  },
+  "val": {
+    "loss": 0.0,
+    "decision_accuracy": 0.448828125,
+    "decision_macro_f1": 0.38337111473083496,
+    "decision_precision_LSR": [
+      0.25074058771133423,
+      0.4833160638809204,
+      0.46372872591018677
+    ],
+    "decision_recall_LSR": [
+      0.11842894554138184,
+      0.6514694094657898,
+      0.40839213132858276
+    ],
+    "decision_f1_LSR": [
+      0.16087429225444794,
+      0.5549342036247253,
+      0.4343048632144928
+    ],
+    "future_decision_accuracy": 0.7304194196428572,
+    "future_event_accuracy": 0.448828125,
+    "future_event_macro_f1": 0.38337111473083496,
+    "future_event_recall_LSR": [
+      0.11842894554138184,
+      0.6514694094657898,
+      0.40839213132858276
+    ],
+    "future_event_confusion_matrix": [
+      [
+        1185,
+        8142,
+        679
+      ],
+      [
+        3169,
+        11660,
+        3069
+      ],
+      [
+        372,
+        4323,
+        3241
+      ]
+    ],
+    "lane_change_event_recall": 0.24668375877828558,
+    "lane_change_event_precision": 0.3778062313273581,
+    "lane_change_event_time_mae_frames": 41.03050158156349,
+    "speed_rmse": 5.168920212260418,
+    "steer_rmse_rad": 0.006573060316769857,
+    "confusion_matrix": [
+      [
+        1185,
+        8142,
+        679
+      ],
+      [
+        3169,
+        11660,
+        3069
+      ],
+      [
+        372,
+        4323,
+        3241
+      ]
+    ],
+    "machine_lane_change_rate": 0.32686941964285715,
+    "machine_high_risk_lane_change_rate": 0.7490409207161125,
+    "machine_unsafe_lane_change_rate": 0.0,
+    "machine_mean_abs_steer_rad": 0.001270055734685489,
+    "machine_mean_abs_accel_mps2": 1.178972495814732,
+    "machine_max_abs_steer_rad": 0.41010624170303345
+  },
+  "test": {
+    "loss": 0.0,
+    "decision_accuracy": 0.43700086805555555,
+    "decision_macro_f1": 0.33096322417259216,
+    "decision_precision_LSR": [
+      0.17157074809074402,
+      0.47839686274528503,
+      0.41089653968811035
+    ],
+    "decision_recall_LSR": [
+      0.06616604328155518,
+      0.7095780968666077,
+      0.2700326442718506
+    ],
+    "decision_f1_LSR": [
+      0.09550189971923828,
+      0.57149338722229,
+      0.3258943259716034
+    ],
+    "future_decision_accuracy": 0.7866739583333333,
+    "future_event_accuracy": 0.43700086805555555,
+    "future_event_macro_f1": 0.33096322417259216,
+    "future_event_recall_LSR": [
+      0.06616604328155518,
+      0.7095780968666077,
+      0.2700326442718506
+    ],
+    "future_event_confusion_matrix": [
+      [
+        793,
+        10407,
+        785
+      ],
+      [
+        3212,
+        16365,
+        3486
+      ],
+      [
+        617,
+        7436,
+        2979
+      ]
+    ],
+    "lane_change_event_recall": 0.16387887213798497,
+    "lane_change_event_precision": 0.31772237196765496,
+    "lane_change_event_time_mae_frames": 41.96288441145281,
+    "speed_rmse": 5.348535302567657,
+    "steer_rmse_rad": 0.0019344993529271052,
+    "confusion_matrix": [
+      [
+        793,
+        10407,
+        785
+      ],
+      [
+        3212,
+        16365,
+        3486
+      ],
+      [
+        617,
+        7436,
+        2979
+      ]
+    ],
+    "machine_lane_change_rate": 0.25763888888888886,
+    "machine_high_risk_lane_change_rate": 0.6721775563356358,
+    "machine_unsafe_lane_change_rate": 0.0,
+    "machine_mean_abs_steer_rad": 0.0006568448392881288,
+    "machine_mean_abs_accel_mps2": 1.1718305067274306,
+    "machine_max_abs_steer_rad": 0.017017699778079987
+  }
+}

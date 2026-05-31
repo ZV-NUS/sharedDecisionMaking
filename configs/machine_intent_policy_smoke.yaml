@@ -1,0 +1,43 @@
+data:
+  train_index: data/processed/intent_hdf5/train.h5
+  val_index: data/processed/intent_hdf5/val.h5
+  test_index: data/processed/intent_hdf5/test.h5
+  batch_size: 64
+  num_workers: 0
+  eval_random_subset: true
+  eval_balanced: true
+  eval_straight_to_lane_change_ratio: 1.0
+  preload_shards: false
+
+policy:
+  future_len: 125
+  frame_rate: 25.0
+  lane_width_m: 3.5
+  wheelbase_m: 2.7
+  max_abs_steer_rad: 0.45
+  max_accel_mps2: 1.5
+  comfortable_decel_mps2: 2.5
+  target_speed_mps: 31.0
+  min_speed_mps: 1.0
+  desired_time_headway_s: 1.4
+  min_front_gap_m: 18.0
+  min_rear_gap_m: 15.0
+  critical_ttc_s: 5.0
+  critical_thw_s: 1.2
+  front_risk_threshold: 0.36
+  potential_sigma_m: 28.0
+  lane_change_duration_s: 3.2
+  min_event_time_s: 0.4
+  decision_logit_margin: 3.0
+
+evaluation:
+  seed: 2026
+  device: auto
+  max_train_batches: 4
+  max_val_batches: 4
+  max_test_batches: 4
+  output_dir: checkpoints/machine_intent_policy_smoke
+  future_eval_mode: event_head_sequence
+  future_time_eval_mode: class_scalar
+  future_time_index_scale: 1.0
+  future_time_index_offset: 0

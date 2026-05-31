@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Machine Policy Validation</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      background: #f6f7f9;
+      color: #1f2933;
+    }
+    header {
+      padding: 24px 32px 12px;
+      background: #ffffff;
+      border-bottom: 1px solid #d9dee7;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .note {
+      margin: 0;
+      color: #566273;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    main {
+      padding: 24px 32px 40px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+      gap: 20px;
+    }
+    article {
+      background: #ffffff;
+      border: 1px solid #d9dee7;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    article img {
+      width: 100%;
+      display: block;
+      background: #ffffff;
+    }
+    .caption {
+      padding: 12px 14px 14px;
+      font-size: 13px;
+      color: #3e4c5f;
+      line-height: 1.5;
+      border-top: 1px solid #edf0f5;
+    }
+    .bad {
+      color: #b42318;
+      font-weight: 700;
+    }
+    .good {
+      color: #067647;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Work2 机器决策与意图验证环境</h1>
+    <p class="note">
+      highD 片段注入交通环境，机器车使用规则/APF 决策，并通过运动学模型执行速度、加速度、前轮转角意图。
+      图中蓝线是机器 rollout，灰色虚线是 highD 人类未来轨迹，其他彩色线是周围车辆预测轨迹。
+    </p>
+  </header>
+  <main>
+    <article>
+      <img src="case_01_idx_4326.png" alt="case 1" />
+      <div class="caption"><span class="good">无碰撞</span>，机器左换道，最小间距 7.18 m，最近对象 rear。</div>
+    </article>
+    <article>
+      <img src="case_02_idx_250.png" alt="case 2" />
+      <div class="caption"><span class="good">无碰撞</span>，机器直行减速，最小间距 6.28 m，最近对象 rear。</div>
+    </article>
+    <article>
+      <img src="case_03_idx_76.png" alt="case 3" />
+      <div class="caption"><span class="good">无碰撞</span>，机器左换道，最小间距 19.08 m，最近对象 front。</div>
+    </article>
+    <article>
+      <img src="case_04_idx_4979.png" alt="case 4" />
+      <div class="caption"><span class="bad">有碰撞风险</span>，机器右换道，最小间距 -0.08 m，最近对象 left-rear。</div>
+    </article>
+    <article>
+      <img src="case_05_idx_3206.png" alt="case 5" />
+      <div class="caption"><span class="good">无碰撞</span>，机器右换道，最小间距 0.82 m，最近对象 left-rear。</div>
+    </article>
+    <article>
+      <img src="case_06_idx_390.png" alt="case 6" />
+      <div class="caption"><span class="bad">有碰撞风险</span>，机器左换道，最小间距 -1.56 m，最近对象 right-rear。</div>
+    </article>
+  </main>
+</body>
+</html>

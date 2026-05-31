@@ -1,0 +1,14 @@
+{
+  "authority_human_mean": 0.5300830078125,
+  "authority_machine_mean": 0.46991699218750005,
+  "authority_human_dominant_rate": 0.0,
+  "authority_machine_dominant_rate": 0.02071875,
+  "trust_machine_to_human_mean": 0.8942192840576172,
+  "trust_human_to_machine_mean": 0.8293870773315429,
+  "human_rollout_risk_mean": 0.03565617829561234,
+  "environment_urgency_mean": 0.17130405235290527,
+  "intent_disagreement_mean": 0.19334168434143068,
+  "shared_rollout_risk_mean": 0.0320965114235878,
+  "shared_rollout_risk_max": 0.49328792095184326,
+  "authority_mean_abs_delta": 0.0009953770073010556
+}

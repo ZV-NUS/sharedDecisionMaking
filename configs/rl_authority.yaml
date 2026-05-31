@@ -1,0 +1,78 @@
+data:
+  train_index: data/processed/intent_hdf5/train.h5
+  val_index: data/processed/intent_hdf5/val.h5
+  test_index: data/processed/intent_hdf5/test.h5
+  batch_size: 32
+  num_workers: 0
+  risk_sampler: true
+  risk_sampler_pool: 12000
+  risk_sampler_threshold: 0.22
+  hard_case_sampler: true
+  hard_case_pool: 4096
+  hard_case_top_k: 1536
+
+human_model:
+  config: configs/human_intent_transformer.yaml
+  checkpoint: checkpoints/human_intent_transformer/best.pt
+
+machine_policy:
+  future_len: 125
+  frame_rate: 25.0
+  lane_width_m: 3.5
+  wheelbase_m: 2.7
+  target_speed_mps: 31.0
+  overtake_front_gap_m: 25.0
+  min_overtake_closing_speed_mps: 1.2
+  min_overtake_speed_mps: 18.0
+
+trust:
+  frame_rate: 25.0
+  future_len: 125
+  wheelbase_m: 2.7
+  safe_clearance_m: 4.0
+  safe_ttc_s: 4.0
+  safe_dhw_m: 15.0
+  decay_eta: 0.035
+  human_risk_bias: 2.4
+  human_risk_gain: 4.0
+  disagreement_bias: 2.3
+  disagreement_gain: 3.2
+
+authority:
+  uncertainty_scale: 0.35
+  conservative_kappa: 0.55
+  smooth_beta: 0.55
+  context_gain: 1.2
+  context_smooth_boost: 0.30
+
+reward:
+  target_speed_mps: 31.0
+  safety_weight: 18.0
+  efficiency_weight: 1.6
+  comfort_weight: 0.12
+  smooth_weight: 0.35
+  reference_weight: 0.06
+  trust_weight: 0.10
+  max_delta: 0.35
+
+rl:
+  obs_dim: 16
+  future_len: 125
+  d_model: 64
+  nhead: 4
+  num_layers: 2
+  dim_feedforward: 128
+  dropout: 0.1
+  max_delta: 0.35
+  actor_lr: 0.0003
+  critic_lr: 0.0003
+  alpha: 0.01
+
+training:
+  seed: 2026
+  device: auto
+  epochs: 8
+  max_train_batches: 48
+  max_val_batches: 8
+  checkpoint_dir: checkpoints/rl_authority
+  oracle_supervision: true

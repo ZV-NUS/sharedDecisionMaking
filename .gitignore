@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Local config
+configs/local.yaml
+.env
+
+# Data and generated artifacts
+/data/
+!data_demo/
+!data_demo/.gitkeep
+/outputs/**
+!outputs/
+!outputs/shared_authority_validation/
+!outputs/shared_authority_validation/shared_authority_rollouts.js
+!outputs/shared_authority_validation/realtime.html
+!outputs/shared_authority_validation/realtime_true_scale.html
+!outputs/machine_policy_validation/
+!outputs/machine_policy_validation/**
+!outputs/work3_authority/
+!outputs/work3_authority/**
+!outputs/work3_authority_optimization/
+!outputs/work3_authority_optimization/**
+!outputs/validation_scene_search/
+!outputs/validation_scene_search/**
+!outputs/diagrams/
+!outputs/diagrams/**
+/results/**
+!results/
+!results/.gitkeep
+driver_in_loop/experiments/**
+
+# Training artifacts
+*.pth
+*.ckpt
+*.h5
+*.hdf5
+*.npz
+*.pkl
+
+# Videos and large media
+*.mp4
+*.avi
+*.mov
+*.gif
+
+# Unity generated files
+driver_in_loop/unity_client/Library/
+driver_in_loop/unity_client/Temp/
+driver_in_loop/unity_client/Logs/
+driver_in_loop/unity_client/Obj/
+driver_in_loop/unity_client/Build/
+driver_in_loop/unity_client/Builds/
+driver_in_loop/unity_client/UserSettings/
+driver_in_loop/unity_client/*.csproj
+driver_in_loop/unity_client/*.sln
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

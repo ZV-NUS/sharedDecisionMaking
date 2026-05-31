@@ -1,0 +1,13 @@
+paths:
+  demo_data: data_demo
+  outputs: outputs
+  results: results
+  rollout_js: outputs/shared_authority_validation/shared_authority_rollouts.js
+  unity_client: driver_in_loop/unity_client
+
+driver_in_loop:
+  unity_host: 127.0.0.1
+  unity_state_port: 50710
+  unity_input_port: 50711
+  runtime_rate: 60.0
+

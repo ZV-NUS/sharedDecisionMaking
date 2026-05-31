@@ -1,0 +1,15 @@
+# Copy this file to configs/local.yaml and edit it for your machine.
+# configs/local.yaml is ignored by Git.
+
+paths:
+  highd_raw_root: "D:/datasets/highD"
+  highd_processed_root: "D:/datasets/highD_processed"
+
+g29:
+  joystick_index: 0
+  steer_axis: 0
+  throttle_axis: 2
+  brake_axis: 3
+  invert_steer: false
+  invert_pedals: true
+

@@ -1,0 +1,56 @@
+data:
+  train_index: data/processed/intent_hdf5/train.h5
+  val_index: data/processed/intent_hdf5/val.h5
+  test_index: data/processed/intent_hdf5/test.h5
+  batch_size: 64
+  num_workers: 0
+  shuffle_train: true
+  train_balanced: true
+  train_straight_to_lane_change_ratio: 1.0
+  eval_random_subset: true
+  eval_balanced: true
+  eval_straight_to_lane_change_ratio: 1.0
+  preload_shards: false
+
+model:
+  d_model: 64
+  nhead: 4
+  num_layers: 2
+  dim_feedforward: 128
+  dropout: 0.1
+  history_len: 75
+  future_len: 125
+  num_decisions: 3
+
+training:
+  seed: 2026
+  epochs: 1
+  max_train_batches: 8
+  max_val_batches: 4
+  max_test_batches: 4
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  grad_clip_norm: 1.0
+  device: auto
+  checkpoint_dir: checkpoints/human_intent_transformer_smoke
+
+loss:
+  decision_weight: 2.0
+  future_decision_weight: 0.05
+  future_event_weight: 3.0
+  future_event_time_weight: 0.2
+  future_event_time_bin_weight: 0.8
+  speed_weight: 0.05
+  steer_weight: 0.05
+  decision_class_weights: [2.5, 1.0, 2.0]
+  future_event_class_weights: [2.5, 1.0, 2.2]
+  future_decision_class_weights: [40.0, 1.0, 40.0]
+  focal_gamma: 2.0
+  future_focal_gamma: 2.0
+  sequence_event_window: 20
+  sequence_event_window_weight: 8.0
+  future_eval_mode: event_head_sequence
+  future_time_eval_mode: hybrid
+  future_time_hybrid_scalar_weight: 0.8
+  future_time_index_offset: 0
+  steer_scale: 100.0

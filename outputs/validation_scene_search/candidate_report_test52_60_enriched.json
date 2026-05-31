@@ -1,0 +1,1501 @@
+{
+  "scope": "test recordings 52-60",
+  "total_samples": 1219824,
+  "summary": [
+    {
+      "rec": 52,
+      "n": 165638,
+      "counts": {
+        "L": 5821,
+        "S": 156039,
+        "R": 3778
+      }
+    },
+    {
+      "rec": 53,
+      "n": 213879,
+      "counts": {
+        "L": 5913,
+        "S": 203306,
+        "R": 4660
+      }
+    },
+    {
+      "rec": 54,
+      "n": 152135,
+      "counts": {
+        "L": 4687,
+        "S": 142676,
+        "R": 4772
+      }
+    },
+    {
+      "rec": 55,
+      "n": 174713,
+      "counts": {
+        "L": 3424,
+        "S": 167468,
+        "R": 3821
+      }
+    },
+    {
+      "rec": 56,
+      "n": 139575,
+      "counts": {
+        "L": 5272,
+        "S": 129663,
+        "R": 4640
+      }
+    },
+    {
+      "rec": 57,
+      "n": 139528,
+      "counts": {
+        "L": 6413,
+        "S": 129363,
+        "R": 3752
+      }
+    },
+    {
+      "rec": 58,
+      "n": 59685,
+      "counts": {
+        "L": 1969,
+        "S": 55381,
+        "R": 2335
+      }
+    },
+    {
+      "rec": 59,
+      "n": 54475,
+      "counts": {
+        "L": 1750,
+        "S": 49672,
+        "R": 3053
+      }
+    },
+    {
+      "rec": 60,
+      "n": 120196,
+      "counts": {
+        "L": 4766,
+        "S": 108787,
+        "R": 6643
+      }
+    }
+  ],
+  "scenes": {
+    "scene1": [
+      {
+        "score": 48.0,
+        "idx": 8739,
+        "rec": 52,
+        "veh": 134,
+        "frame": 1408,
+        "lane": 3,
+        "label": "R",
+        "front_gap": 18.8699951171875,
+        "front_rel_v": -0.2700004577636719,
+        "ttc": 20.0,
+        "front_risk": 0.8446800708770752,
+        "left_safe": false,
+        "right_safe": true,
+        "left_block": true,
+        "right_block": true,
+        "par_left": true,
+        "par_right": true,
+        "mean_acc_2s": 0.04929288849234581,
+        "left": {
+          "front_gap": null,
+          "rear_gap": 5.029998779296875,
+          "front_rel_v": null,
+          "rear_rel_v": 5.229999542236328
+        },
+        "right": {
+          "front_gap": null,
+          "rear_gap": 5.790008544921875,
+          "front_rel_v": null,
+          "rear_rel_v": -0.6900005340576172
+        },
+        "neighbor_ids": {
+          "precedingId": 123,
+          "followingId": 141,
+          "leftPrecedingId": 135,
+          "leftFollowingId": 136,
+          "rightPrecedingId": 116,
+          "rightFollowingId": 128,
+          "laneId": 3,
+          "x": 212.95,
+          "y": 9.53,
+          "vx": -23.45,
+          "ax": 0.55
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "12:30",
+          "duration": 1009.2,
+          "numVehicles": 2121,
+          "numCars": 1600,
+          "numTrucks": 521,
+          "upperLaneMarkings": "3.36;7.42;11.22;15.20",
+          "lowerLaneMarkings": "21.21;25.36;29.25;33.40"
+        }
+      },
+      {
+        "score": 48.0,
+        "idx": 104729,
+        "rec": 52,
+        "veh": 1340,
+        "frame": 15886,
+        "lane": 7,
+        "label": "R",
+        "front_gap": 34.94000244140625,
+        "front_rel_v": -3.700000762939453,
+        "ttc": 8.220000267028809,
+        "front_risk": 0.5545241832733154,
+        "left_safe": false,
+        "right_safe": false,
+        "left_block": false,
+        "right_block": true,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": 0.2142292857170105,
+        "left": {
+          "front_gap": 14.300003051757812,
+          "rear_gap": null,
+          "front_rel_v": 0.6100006103515625,
+          "rear_rel_v": null
+        },
+        "right": {
+          "front_gap": 17.330001831054688,
+          "rear_gap": null,
+          "front_rel_v": -4.459999084472656,
+          "rear_rel_v": null
+        },
+        "neighbor_ids": {
+          "precedingId": 1334,
+          "followingId": 1345,
+          "leftPrecedingId": 1339,
+          "leftFollowingId": 0,
+          "rightPrecedingId": 1335,
+          "rightFollowingId": 1342,
+          "laneId": 7,
+          "x": 215.8,
+          "y": 25.05,
+          "vx": 31.33,
+          "ax": -0.14
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "12:30",
+          "duration": 1009.2,
+          "numVehicles": 2121,
+          "numCars": 1600,
+          "numTrucks": 521,
+          "upperLaneMarkings": "3.36;7.42;11.22;15.20",
+          "lowerLaneMarkings": "21.21;25.36;29.25;33.40"
+        }
+      },
+      {
+        "score": 48.0,
+        "idx": 211569,
+        "rec": 53,
+        "veh": 2401,
+        "frame": 26060,
+        "lane": 7,
+        "label": "R",
+        "front_gap": 18.910003662109375,
+        "front_rel_v": -3.410001754760742,
+        "ttc": 4.130000114440918,
+        "front_risk": 0.994002103805542,
+        "left_safe": false,
+        "right_safe": true,
+        "left_block": false,
+        "right_block": true,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": -0.20280976593494415,
+        "left": {
+          "front_gap": 16.600006103515625,
+          "rear_gap": 110.57999420166016,
+          "front_rel_v": 1.0,
+          "rear_rel_v": 3.979999542236328
+        },
+        "right": {
+          "front_gap": null,
+          "rear_gap": 7.5699920654296875,
+          "front_rel_v": null,
+          "rear_rel_v": -1.0800018310546875
+        },
+        "neighbor_ids": {
+          "precedingId": 2395,
+          "followingId": 2408,
+          "leftPrecedingId": 2400,
+          "leftFollowingId": 2409,
+          "rightPrecedingId": 2390,
+          "rightFollowingId": 2398,
+          "laneId": 7,
+          "x": 210.29,
+          "y": 29.78,
+          "vx": 28.04,
+          "ax": -0.1
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "13:15",
+          "duration": 1058.16,
+          "numVehicles": 2442,
+          "numCars": 1892,
+          "numTrucks": 550,
+          "upperLaneMarkings": "8.19;12.43;16.40;20.46",
+          "lowerLaneMarkings": "26.34;30.40;34.29;38.53"
+        }
+      }
+    ],
+    "scene2": [
+      {
+        "score": 42.0,
+        "idx": 61338,
+        "rec": 52,
+        "veh": 790,
+        "frame": 9502,
+        "lane": 3,
+        "label": "L",
+        "front_gap": 41.02000427246094,
+        "front_rel_v": -1.2999992370605469,
+        "ttc": 20.0,
+        "front_risk": 0.36604470014572144,
+        "left_safe": false,
+        "right_safe": true,
+        "left_block": true,
+        "right_block": false,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": -0.040762897580862045,
+        "left": {
+          "front_gap": 27.510009765625,
+          "rear_gap": 11.25,
+          "front_rel_v": 5.89000129699707,
+          "rear_rel_v": 4.230001449584961
+        },
+        "right": {
+          "front_gap": null,
+          "rear_gap": null,
+          "front_rel_v": null,
+          "rear_rel_v": null
+        },
+        "neighbor_ids": {
+          "precedingId": 787,
+          "followingId": 802,
+          "leftPrecedingId": 792,
+          "leftFollowingId": 795,
+          "rightPrecedingId": 780,
+          "rightFollowingId": 791,
+          "laneId": 3,
+          "x": 156.57,
+          "y": 9.01,
+          "vx": -29.56,
+          "ax": -0.16
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "12:30",
+          "duration": 1009.2,
+          "numVehicles": 2121,
+          "numCars": 1600,
+          "numTrucks": 521,
+          "upperLaneMarkings": "3.36;7.42;11.22;15.20",
+          "lowerLaneMarkings": "21.21;25.36;29.25;33.40"
+        }
+      },
+      {
+        "score": 42.0,
+        "idx": 41995,
+        "rec": 52,
+        "veh": 561,
+        "frame": 6656,
+        "lane": 7,
+        "label": "R",
+        "front_gap": null,
+        "front_rel_v": null,
+        "ttc": 20.0,
+        "front_risk": 0.040710870176553726,
+        "left_safe": true,
+        "right_safe": false,
+        "left_block": false,
+        "right_block": true,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": 0.11410868912935257,
+        "left": {
+          "front_gap": 60.08998107910156,
+          "rear_gap": null,
+          "front_rel_v": 3.2099990844726562,
+          "rear_rel_v": null
+        },
+        "right": {
+          "front_gap": 10.529998779296875,
+          "rear_gap": null,
+          "front_rel_v": -9.649999618530273,
+          "rear_rel_v": null
+        },
+        "neighbor_ids": {
+          "precedingId": 556,
+          "followingId": 567,
+          "leftPrecedingId": 557,
+          "leftFollowingId": 0,
+          "rightPrecedingId": 553,
+          "rightFollowingId": 558,
+          "laneId": 7,
+          "x": 233.71,
+          "y": 25.83,
+          "vx": 33.75,
+          "ax": 0.2
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "12:30",
+          "duration": 1009.2,
+          "numVehicles": 2121,
+          "numCars": 1600,
+          "numTrucks": 521,
+          "upperLaneMarkings": "3.36;7.42;11.22;15.20",
+          "lowerLaneMarkings": "21.21;25.36;29.25;33.40"
+        }
+      },
+      {
+        "score": 42.0,
+        "idx": 134402,
+        "rec": 52,
+        "veh": 1720,
+        "frame": 20358,
+        "lane": 3,
+        "label": "L",
+        "front_gap": 79.64999389648438,
+        "front_rel_v": 1.970001220703125,
+        "ttc": 20.0,
+        "front_risk": 0.010201288387179375,
+        "left_safe": false,
+        "right_safe": true,
+        "left_block": true,
+        "right_block": false,
+        "par_left": true,
+        "par_right": false,
+        "mean_acc_2s": -0.4249550998210907,
+        "left": {
+          "front_gap": 79.03999328613281,
+          "rear_gap": 5.45001220703125,
+          "front_rel_v": 2.240001678466797,
+          "rear_rel_v": 2.229999542236328
+        },
+        "right": {
+          "front_gap": null,
+          "rear_gap": null,
+          "front_rel_v": null,
+          "rear_rel_v": null
+        },
+        "neighbor_ids": {
+          "precedingId": 1714,
+          "followingId": 1724,
+          "leftPrecedingId": 1715,
+          "leftFollowingId": 1723,
+          "rightPrecedingId": 1703,
+          "rightFollowingId": 1719,
+          "laneId": 3,
+          "x": 246.9,
+          "y": 8.15,
+          "vx": -32.32,
+          "ax": 0.43
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "12:30",
+          "duration": 1009.2,
+          "numVehicles": 2121,
+          "numCars": 1600,
+          "numTrucks": 521,
+          "upperLaneMarkings": "3.36;7.42;11.22;15.20",
+          "lowerLaneMarkings": "21.21;25.36;29.25;33.40"
+        }
+      },
+      {
+        "score": 42.0,
+        "idx": 4909,
+        "rec": 52,
+        "veh": 91,
+        "frame": 1055,
+        "lane": 3,
+        "label": "L",
+        "front_gap": 25.8699951171875,
+        "front_rel_v": -0.3899993896484375,
+        "ttc": 20.0,
+        "front_risk": 0.6985580921173096,
+        "left_safe": true,
+        "right_safe": true,
+        "left_block": true,
+        "right_block": false,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": -0.154941126704216,
+        "left": {
+          "front_gap": 8.199996948242188,
+          "rear_gap": 34.55999755859375,
+          "front_rel_v": 6.339998245239258,
+          "rear_rel_v": 3.3999996185302734
+        },
+        "right": {
+          "front_gap": 74.33000183105469,
+          "rear_gap": null,
+          "front_rel_v": -3.0,
+          "rear_rel_v": null
+        },
+        "neighbor_ids": {
+          "precedingId": 88,
+          "followingId": 94,
+          "leftPrecedingId": 93,
+          "leftFollowingId": 95,
+          "rightPrecedingId": 83,
+          "rightFollowingId": 92,
+          "laneId": 3,
+          "x": 204.11,
+          "y": 7.88,
+          "vx": -27.26,
+          "ax": 0.17
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "12:30",
+          "duration": 1009.2,
+          "numVehicles": 2121,
+          "numCars": 1600,
+          "numTrucks": 521,
+          "upperLaneMarkings": "3.36;7.42;11.22;15.20",
+          "lowerLaneMarkings": "21.21;25.36;29.25;33.40"
+        }
+      },
+      {
+        "score": 42.0,
+        "idx": 84243,
+        "rec": 53,
+        "veh": 962,
+        "frame": 10773,
+        "lane": 3,
+        "label": "L",
+        "front_gap": 100.87001037597656,
+        "front_rel_v": 5.710000991821289,
+        "ttc": 20.0,
+        "front_risk": 0.0007605374557897449,
+        "left_safe": false,
+        "right_safe": true,
+        "left_block": true,
+        "right_block": false,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": -0.5209276080131531,
+        "left": {
+          "front_gap": 88.75001525878906,
+          "rear_gap": 14.5999755859375,
+          "front_rel_v": 5.069997787475586,
+          "rear_rel_v": 6.879999160766602
+        },
+        "right": {
+          "front_gap": null,
+          "rear_gap": null,
+          "front_rel_v": null,
+          "rear_rel_v": null
+        },
+        "neighbor_ids": {
+          "precedingId": 957,
+          "followingId": 0,
+          "leftPrecedingId": 958,
+          "leftFollowingId": 965,
+          "rightPrecedingId": 959,
+          "rightFollowingId": 963,
+          "laneId": 3,
+          "x": 268.42,
+          "y": 13.58,
+          "vx": -30.69,
+          "ax": 0.42
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "13:15",
+          "duration": 1058.16,
+          "numVehicles": 2442,
+          "numCars": 1892,
+          "numTrucks": 550,
+          "upperLaneMarkings": "8.19;12.43;16.40;20.46",
+          "lowerLaneMarkings": "26.34;30.40;34.29;38.53"
+        }
+      }
+    ],
+    "scene3": [
+      {
+        "score": 29.990005493164062,
+        "idx": 8822,
+        "rec": 52,
+        "veh": 134,
+        "frame": 1491,
+        "lane": 3,
+        "label": "R",
+        "front_gap": 18.740005493164062,
+        "front_rel_v": -0.7900009155273438,
+        "ttc": 18.540000915527344,
+        "front_risk": 0.8692988157272339,
+        "left_safe": true,
+        "right_safe": true,
+        "left_block": false,
+        "right_block": true,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": 0.614881694316864,
+        "left": {
+          "front_gap": 13.250007629394531,
+          "rear_gap": 41.38999938964844,
+          "front_rel_v": 5.159999847412109,
+          "rear_rel_v": 2.239999771118164
+        },
+        "right": {
+          "front_gap": null,
+          "rear_gap": 10.009994506835938,
+          "front_rel_v": null,
+          "rear_rel_v": -2.25
+        },
+        "neighbor_ids": {
+          "precedingId": 123,
+          "followingId": 141,
+          "leftPrecedingId": 136,
+          "leftFollowingId": 140,
+          "rightPrecedingId": 116,
+          "rightFollowingId": 128,
+          "laneId": 3,
+          "x": 134.82,
+          "y": 9.87,
+          "vx": -24.34,
+          "ax": -0.65
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "12:30",
+          "duration": 1009.2,
+          "numVehicles": 2121,
+          "numCars": 1600,
+          "numTrucks": 521,
+          "upperLaneMarkings": "3.36;7.42;11.22;15.20",
+          "lowerLaneMarkings": "21.21;25.36;29.25;33.40"
+        }
+      },
+      {
+        "score": 29.990005493164062,
+        "idx": 22107,
+        "rec": 54,
+        "veh": 388,
+        "frame": 4397,
+        "lane": 3,
+        "label": "R",
+        "front_gap": 49.540008544921875,
+        "front_rel_v": -8.070001602172852,
+        "ttc": 5.480000019073486,
+        "front_risk": 0.28319570422172546,
+        "left_safe": true,
+        "right_safe": true,
+        "left_block": false,
+        "right_block": true,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": 0.1017603799700737,
+        "left": {
+          "front_gap": null,
+          "rear_gap": 95.29000854492188,
+          "front_rel_v": null,
+          "rear_rel_v": 4.909999847412109
+        },
+        "right": {
+          "front_gap": 77.31999969482422,
+          "rear_gap": 10.009994506835938,
+          "front_rel_v": -12.780000686645508,
+          "rear_rel_v": -5.030000686645508
+        },
+        "neighbor_ids": {
+          "precedingId": 384,
+          "followingId": 391,
+          "leftPrecedingId": 381,
+          "leftFollowingId": 392,
+          "rightPrecedingId": 376,
+          "rightFollowingId": 387,
+          "laneId": 3,
+          "x": 183.69,
+          "y": 13.23,
+          "vx": -35.79,
+          "ax": 0.05
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "09:16",
+          "duration": 1071,
+          "numVehicles": 2343,
+          "numCars": 1902,
+          "numTrucks": 441,
+          "upperLaneMarkings": "8.11;12.25;16.23;20.20",
+          "lowerLaneMarkings": "25.91;29.97;33.77;38.18"
+        }
+      },
+      {
+        "score": 29.970001220703125,
+        "idx": 35313,
+        "rec": 52,
+        "veh": 476,
+        "frame": 5493,
+        "lane": 3,
+        "label": "R",
+        "front_gap": 32.339996337890625,
+        "front_rel_v": -2.0,
+        "ttc": 13.989999771118164,
+        "front_risk": 0.5776364207267761,
+        "left_safe": true,
+        "right_safe": true,
+        "left_block": true,
+        "right_block": true,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": 0.27798545360565186,
+        "left": {
+          "front_gap": 11.970001220703125,
+          "rear_gap": null,
+          "front_rel_v": 2.6300010681152344,
+          "rear_rel_v": null
+        },
+        "right": {
+          "front_gap": null,
+          "rear_gap": 10.029998779296875,
+          "front_rel_v": null,
+          "rear_rel_v": -3.6499996185302734
+        },
+        "neighbor_ids": {
+          "precedingId": 470,
+          "followingId": 479,
+          "leftPrecedingId": 473,
+          "leftFollowingId": 0,
+          "rightPrecedingId": 471,
+          "rightFollowingId": 474,
+          "laneId": 3,
+          "x": 288.96,
+          "y": 8.49,
+          "vx": -27.8,
+          "ax": 0.02
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "12:30",
+          "duration": 1009.2,
+          "numVehicles": 2121,
+          "numCars": 1600,
+          "numTrucks": 521,
+          "upperLaneMarkings": "3.36;7.42;11.22;15.20",
+          "lowerLaneMarkings": "21.21;25.36;29.25;33.40"
+        }
+      },
+      {
+        "score": 29.970001220703125,
+        "idx": 143899,
+        "rec": 53,
+        "veh": 1601,
+        "frame": 17516,
+        "lane": 3,
+        "label": "R",
+        "front_gap": 27.740005493164062,
+        "front_rel_v": -3.309999465942383,
+        "ttc": 7.170000076293945,
+        "front_risk": 0.7339974045753479,
+        "left_safe": true,
+        "right_safe": true,
+        "left_block": false,
+        "right_block": true,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": 0.28587016463279724,
+        "left": {
+          "front_gap": 109.34000396728516,
+          "rear_gap": 58.96998596191406,
+          "front_rel_v": 1.6000003814697266,
+          "rear_rel_v": 5.319999694824219
+        },
+        "right": {
+          "front_gap": null,
+          "rear_gap": 10.029998779296875,
+          "front_rel_v": null,
+          "rear_rel_v": -2.799999237060547
+        },
+        "neighbor_ids": {
+          "precedingId": 1596,
+          "followingId": 1604,
+          "leftPrecedingId": 1593,
+          "leftFollowingId": 1603,
+          "rightPrecedingId": 1591,
+          "rightFollowingId": 1600,
+          "laneId": 3,
+          "x": 236.52,
+          "y": 13.71,
+          "vx": -28.8,
+          "ax": -0.3
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "13:15",
+          "duration": 1058.16,
+          "numVehicles": 2442,
+          "numCars": 1892,
+          "numTrucks": 550,
+          "upperLaneMarkings": "8.19;12.43;16.40;20.46",
+          "lowerLaneMarkings": "26.34;30.40;34.29;38.53"
+        }
+      },
+      {
+        "score": 29.970001220703125,
+        "idx": 61323,
+        "rec": 56,
+        "veh": 826,
+        "frame": 11106,
+        "lane": 3,
+        "label": "L",
+        "front_gap": 23.1300048828125,
+        "front_rel_v": -1.2299995422363281,
+        "ttc": 14.479999542236328,
+        "front_risk": 0.8176735639572144,
+        "left_safe": true,
+        "right_safe": true,
+        "left_block": true,
+        "right_block": false,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": -0.43432506918907166,
+        "left": {
+          "front_gap": 10.029998779296875,
+          "rear_gap": null,
+          "front_rel_v": 7.350002288818359,
+          "rear_rel_v": null
+        },
+        "right": {
+          "front_gap": null,
+          "rear_gap": null,
+          "front_rel_v": null,
+          "rear_rel_v": null
+        },
+        "neighbor_ids": {
+          "precedingId": 822,
+          "followingId": 834,
+          "leftPrecedingId": 827,
+          "leftFollowingId": 830,
+          "rightPrecedingId": 817,
+          "rightFollowingId": 831,
+          "laneId": 3,
+          "x": 316.31,
+          "y": 12.34,
+          "vx": -26.39,
+          "ax": 0.62
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "10:04",
+          "duration": 950.16,
+          "numVehicles": 1795,
+          "numCars": 1352,
+          "numTrucks": 443,
+          "upperLaneMarkings": "8.13;12.20;16.00;20.15",
+          "lowerLaneMarkings": "25.85;29.91;33.71;38.03"
+        }
+      },
+      {
+        "score": 29.94000244140625,
+        "idx": 193522,
+        "rec": 53,
+        "veh": 2188,
+        "frame": 23679,
+        "lane": 3,
+        "label": "L",
+        "front_gap": 22.259994506835938,
+        "front_rel_v": -0.7199993133544922,
+        "ttc": 20.0,
+        "front_risk": 0.8182795643806458,
+        "left_safe": true,
+        "right_safe": true,
+        "left_block": true,
+        "right_block": false,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": 0.05924609303474426,
+        "left": {
+          "front_gap": 10.05999755859375,
+          "rear_gap": null,
+          "front_rel_v": 4.629999160766602,
+          "rear_rel_v": null
+        },
+        "right": {
+          "front_gap": null,
+          "rear_gap": null,
+          "front_rel_v": null,
+          "rear_rel_v": null
+        },
+        "neighbor_ids": {
+          "precedingId": 2185,
+          "followingId": 2193,
+          "leftPrecedingId": 2189,
+          "leftFollowingId": 0,
+          "rightPrecedingId": 2171,
+          "rightFollowingId": 2186,
+          "laneId": 3,
+          "x": 226.87,
+          "y": 13.67,
+          "vx": -29.97,
+          "ax": 0.12
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "13:15",
+          "duration": 1058.16,
+          "numVehicles": 2442,
+          "numCars": 1892,
+          "numTrucks": 550,
+          "upperLaneMarkings": "8.19;12.43;16.40;20.46",
+          "lowerLaneMarkings": "26.34;30.40;34.29;38.53"
+        }
+      }
+    ],
+    "scene4": [
+      {
+        "score": 39.74999237060547,
+        "idx": 95659,
+        "rec": 60,
+        "veh": 1141,
+        "frame": 18838,
+        "lane": 7,
+        "label": "S",
+        "front_gap": 14.57000732421875,
+        "front_rel_v": -7.159999847412109,
+        "ttc": 1.3700000047683716,
+        "front_risk": 1.2531763315200806,
+        "left_safe": true,
+        "right_safe": true,
+        "left_block": false,
+        "right_block": false,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": 0.7938600182533264,
+        "left": {
+          "front_gap": null,
+          "rear_gap": null,
+          "front_rel_v": null,
+          "rear_rel_v": null
+        },
+        "right": {
+          "front_gap": 91.94001770019531,
+          "rear_gap": 63.44999694824219,
+          "front_rel_v": -10.120000839233398,
+          "rear_rel_v": -6.3600006103515625
+        },
+        "neighbor_ids": {
+          "precedingId": 1138,
+          "followingId": 1143,
+          "leftPrecedingId": 0,
+          "leftFollowingId": 0,
+          "rightPrecedingId": 1135,
+          "rightFollowingId": 1145,
+          "laneId": 7,
+          "x": 186.73,
+          "y": 24.17,
+          "vx": 39.2,
+          "ax": 0.74
+        },
+        "recording_meta": {
+          "locationId": 6,
+          "speedLimit": -1.0,
+          "startTime": "09:37",
+          "duration": 960.88,
+          "numVehicles": 1467,
+          "numCars": 1137,
+          "numTrucks": 330,
+          "upperLaneMarkings": "5.25;8.79;12.68;15.88;19.25",
+          "lowerLaneMarkings": "24.00;27.29;30.57;34.63"
+        }
+      },
+      {
+        "score": 33.280006408691406,
+        "idx": 58348,
+        "rec": 56,
+        "veh": 780,
+        "frame": 10511,
+        "lane": 6,
+        "label": "S",
+        "front_gap": 13.799995422363281,
+        "front_rel_v": -3.5400009155273438,
+        "ttc": 2.5,
+        "front_risk": 1.10233736038208,
+        "left_safe": true,
+        "right_safe": true,
+        "left_block": false,
+        "right_block": true,
+        "par_left": false,
+        "par_right": true,
+        "mean_acc_2s": 0.9590046405792236,
+        "left": {
+          "front_gap": null,
+          "rear_gap": null,
+          "front_rel_v": null,
+          "rear_rel_v": null
+        },
+        "right": {
+          "front_gap": null,
+          "rear_gap": 6.930000305175781,
+          "front_rel_v": null,
+          "rear_rel_v": -7.6699981689453125
+        },
+        "neighbor_ids": {
+          "precedingId": 777,
+          "followingId": 0,
+          "leftPrecedingId": 0,
+          "leftFollowingId": 0,
+          "rightPrecedingId": 774,
+          "rightFollowingId": 778,
+          "laneId": 6,
+          "x": 126.63,
+          "y": 26.92,
+          "vx": 39.46,
+          "ax": 0.94
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "10:04",
+          "duration": 950.16,
+          "numVehicles": 1795,
+          "numCars": 1352,
+          "numTrucks": 443,
+          "upperLaneMarkings": "8.13;12.20;16.00;20.15",
+          "lowerLaneMarkings": "25.85;29.91;33.71;38.03"
+        }
+      },
+      {
+        "score": 31.12000274658203,
+        "idx": 59956,
+        "rec": 54,
+        "veh": 933,
+        "frame": 10594,
+        "lane": 3,
+        "label": "S",
+        "front_gap": 12.0,
+        "front_rel_v": -1.5600013732910156,
+        "ttc": 4.96999979019165,
+        "front_risk": 1.024982213973999,
+        "left_safe": true,
+        "right_safe": true,
+        "left_block": false,
+        "right_block": false,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": -1.0721747875213623,
+        "left": {
+          "front_gap": 15.559989929199219,
+          "rear_gap": null,
+          "front_rel_v": 10.25,
+          "rear_rel_v": null
+        },
+        "right": {
+          "front_gap": null,
+          "rear_gap": null,
+          "front_rel_v": null,
+          "rear_rel_v": null
+        },
+        "neighbor_ids": {
+          "precedingId": 928,
+          "followingId": 944,
+          "leftPrecedingId": 941,
+          "leftFollowingId": 940,
+          "rightPrecedingId": 922,
+          "rightFollowingId": 938,
+          "laneId": 3,
+          "x": 140.79,
+          "y": 13.64,
+          "vx": -26.54,
+          "ax": 1.08
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "09:16",
+          "duration": 1071,
+          "numVehicles": 2343,
+          "numCars": 1902,
+          "numTrucks": 441,
+          "upperLaneMarkings": "8.11;12.25;16.23;20.20",
+          "lowerLaneMarkings": "25.91;29.97;33.77;38.18"
+        }
+      }
+    ],
+    "scene5": [
+      {
+        "score": 31.13926124572754,
+        "idx": 95659,
+        "rec": 60,
+        "veh": 1141,
+        "frame": 18838,
+        "lane": 7,
+        "label": "S",
+        "front_gap": 14.57000732421875,
+        "front_rel_v": -7.159999847412109,
+        "ttc": 1.3700000047683716,
+        "front_risk": 1.2531763315200806,
+        "left_safe": true,
+        "right_safe": true,
+        "left_block": false,
+        "right_block": false,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": 0.7938600182533264,
+        "left": {
+          "front_gap": null,
+          "rear_gap": null,
+          "front_rel_v": null,
+          "rear_rel_v": null
+        },
+        "right": {
+          "front_gap": 91.94001770019531,
+          "rear_gap": 63.44999694824219,
+          "front_rel_v": -10.120000839233398,
+          "rear_rel_v": -6.3600006103515625
+        },
+        "neighbor_ids": {
+          "precedingId": 1138,
+          "followingId": 1143,
+          "leftPrecedingId": 0,
+          "leftFollowingId": 0,
+          "rightPrecedingId": 1135,
+          "rightFollowingId": 1145,
+          "laneId": 7,
+          "x": 186.73,
+          "y": 24.17,
+          "vx": 39.2,
+          "ax": 0.74
+        },
+        "recording_meta": {
+          "locationId": 6,
+          "speedLimit": -1.0,
+          "startTime": "09:37",
+          "duration": 960.88,
+          "numVehicles": 1467,
+          "numCars": 1137,
+          "numTrucks": 330,
+          "upperLaneMarkings": "5.25;8.79;12.68;15.88;19.25",
+          "lowerLaneMarkings": "24.00;27.29;30.57;34.63"
+        }
+      },
+      {
+        "score": 27.47770881652832,
+        "idx": 58348,
+        "rec": 56,
+        "veh": 780,
+        "frame": 10511,
+        "lane": 6,
+        "label": "S",
+        "front_gap": 13.799995422363281,
+        "front_rel_v": -3.5400009155273438,
+        "ttc": 2.5,
+        "front_risk": 1.10233736038208,
+        "left_safe": true,
+        "right_safe": true,
+        "left_block": false,
+        "right_block": true,
+        "par_left": false,
+        "par_right": true,
+        "mean_acc_2s": 0.9590046405792236,
+        "left": {
+          "front_gap": null,
+          "rear_gap": null,
+          "front_rel_v": null,
+          "rear_rel_v": null
+        },
+        "right": {
+          "front_gap": null,
+          "rear_gap": 6.930000305175781,
+          "front_rel_v": null,
+          "rear_rel_v": -7.6699981689453125
+        },
+        "neighbor_ids": {
+          "precedingId": 777,
+          "followingId": 0,
+          "leftPrecedingId": 0,
+          "leftFollowingId": 0,
+          "rightPrecedingId": 774,
+          "rightFollowingId": 778,
+          "laneId": 6,
+          "x": 126.63,
+          "y": 26.92,
+          "vx": 39.46,
+          "ax": 0.94
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "10:04",
+          "duration": 950.16,
+          "numVehicles": 1795,
+          "numCars": 1352,
+          "numTrucks": 443,
+          "upperLaneMarkings": "8.13;12.20;16.00;20.15",
+          "lowerLaneMarkings": "25.85;29.91;33.71;38.03"
+        }
+      },
+      {
+        "score": 25.448078155517578,
+        "idx": 882,
+        "rec": 56,
+        "veh": 32,
+        "frame": 340,
+        "lane": 6,
+        "label": "S",
+        "front_gap": 8.139999389648438,
+        "front_rel_v": 2.579998016357422,
+        "ttc": 20.0,
+        "front_risk": 1.1136130094528198,
+        "left_safe": true,
+        "right_safe": false,
+        "left_block": false,
+        "right_block": false,
+        "par_left": false,
+        "par_right": false,
+        "mean_acc_2s": 0.6791717410087585,
+        "left": {
+          "front_gap": null,
+          "rear_gap": null,
+          "front_rel_v": null,
+          "rear_rel_v": null
+        },
+        "right": {
+          "front_gap": 17.730010986328125,
+          "rear_gap": 34.93998718261719,
+          "front_rel_v": -1.9900016784667969,
+          "rear_rel_v": -2.200000762939453
+        },
+        "neighbor_ids": {
+          "precedingId": 34,
+          "followingId": 39,
+          "leftPrecedingId": 0,
+          "leftFollowingId": 0,
+          "rightPrecedingId": 28,
+          "rightFollowingId": 38,
+          "laneId": 6,
+          "x": 183.29,
+          "y": 29.0,
+          "vx": 32.79,
+          "ax": 0.6
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "10:04",
+          "duration": 950.16,
+          "numVehicles": 1795,
+          "numCars": 1352,
+          "numTrucks": 443,
+          "upperLaneMarkings": "8.13;12.20;16.00;20.15",
+          "lowerLaneMarkings": "25.85;29.91;33.71;38.03"
+        }
+      }
+    ],
+    "scene6": [
+      {
+        "score": 26.100021362304688,
+        "idx": 21957,
+        "rec": 56,
+        "veh": 309,
+        "frame": 3987,
+        "lane": 7,
+        "label": "S",
+        "front_gap": null,
+        "front_rel_v": null,
+        "ttc": 20.0,
+        "front_risk": 0.8740613460540771,
+        "left_safe": true,
+        "right_safe": false,
+        "left_block": true,
+        "right_block": true,
+        "par_left": true,
+        "par_right": true,
+        "mean_acc_2s": 0.161188006401062,
+        "left": {
+          "front_gap": 4.149993896484375,
+          "rear_gap": 17.030006408691406,
+          "front_rel_v": 4.869998931884766,
+          "rear_rel_v": 4.629999160766602
+        },
+        "right": {
+          "front_gap": 5.8899993896484375,
+          "rear_gap": null,
+          "front_rel_v": -0.15000152587890625,
+          "rear_rel_v": null
+        },
+        "neighbor_ids": {
+          "precedingId": 306,
+          "followingId": 313,
+          "leftPrecedingId": 310,
+          "leftFollowingId": 312,
+          "rightPrecedingId": 307,
+          "rightFollowingId": 318,
+          "laneId": 7,
+          "x": 116.73,
+          "y": 31.37,
+          "vx": 24.86,
+          "ax": 0.06
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "10:04",
+          "duration": 950.16,
+          "numVehicles": 1795,
+          "numCars": 1352,
+          "numTrucks": 443,
+          "upperLaneMarkings": "8.13;12.20;16.00;20.15",
+          "lowerLaneMarkings": "25.85;29.91;33.71;38.03"
+        }
+      },
+      {
+        "score": 25.940021514892578,
+        "idx": 22090,
+        "rec": 56,
+        "veh": 309,
+        "frame": 4120,
+        "lane": 7,
+        "label": "S",
+        "front_gap": null,
+        "front_rel_v": null,
+        "ttc": 20.0,
+        "front_risk": 0.8789336681365967,
+        "left_safe": false,
+        "right_safe": false,
+        "left_block": true,
+        "right_block": true,
+        "par_left": false,
+        "par_right": true,
+        "mean_acc_2s": 0.10096243768930435,
+        "left": {
+          "front_gap": 9.91998291015625,
+          "rear_gap": 7.6800079345703125,
+          "front_rel_v": 5.289999008178711,
+          "rear_rel_v": 5.039999008178711
+        },
+        "right": {
+          "front_gap": 4.149993896484375,
+          "rear_gap": null,
+          "front_rel_v": -0.23000144958496094,
+          "rear_rel_v": null
+        },
+        "neighbor_ids": {
+          "precedingId": 306,
+          "followingId": 313,
+          "leftPrecedingId": 312,
+          "leftFollowingId": 314,
+          "rightPrecedingId": 307,
+          "rightFollowingId": 318,
+          "laneId": 7,
+          "x": 250.88,
+          "y": 31.48,
+          "vx": 25.45,
+          "ax": 0.07
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "10:04",
+          "duration": 950.16,
+          "numVehicles": 1795,
+          "numCars": 1352,
+          "numTrucks": 443,
+          "upperLaneMarkings": "8.13;12.20;16.00;20.15",
+          "lowerLaneMarkings": "25.85;29.91;33.71;38.03"
+        }
+      },
+      {
+        "score": 25.940021514892578,
+        "idx": 21743,
+        "rec": 56,
+        "veh": 307,
+        "frame": 4120,
+        "lane": 8,
+        "label": "S",
+        "front_gap": null,
+        "front_rel_v": null,
+        "ttc": 20.0,
+        "front_risk": 0.7724512219429016,
+        "left_safe": true,
+        "right_safe": true,
+        "left_block": true,
+        "right_block": false,
+        "par_left": true,
+        "par_right": false,
+        "mean_acc_2s": 0.19241660833358765,
+        "left": {
+          "front_gap": null,
+          "rear_gap": 4.149993896484375,
+          "front_rel_v": null,
+          "rear_rel_v": 0.23000144958496094
+        },
+        "right": {
+          "front_gap": null,
+          "rear_gap": null,
+          "front_rel_v": null,
+          "rear_rel_v": null
+        },
+        "neighbor_ids": {
+          "precedingId": 304,
+          "followingId": 318,
+          "leftPrecedingId": 306,
+          "leftFollowingId": 309,
+          "rightPrecedingId": 0,
+          "rightFollowingId": 0,
+          "laneId": 8,
+          "x": 255.03,
+          "y": 35.37,
+          "vx": 25.22,
+          "ax": 0.19
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "10:04",
+          "duration": 950.16,
+          "numVehicles": 1795,
+          "numCars": 1352,
+          "numTrucks": 443,
+          "upperLaneMarkings": "8.13;12.20;16.00;20.15",
+          "lowerLaneMarkings": "25.85;29.91;33.71;38.03"
+        }
+      },
+      {
+        "score": 25.740036010742188,
+        "idx": 14290,
+        "rec": 52,
+        "veh": 188,
+        "frame": 1889,
+        "lane": 3,
+        "label": "S",
+        "front_gap": 57.50999450683594,
+        "front_rel_v": -0.09000015258789062,
+        "ttc": 20.0,
+        "front_risk": 0.1062370017170906,
+        "left_safe": false,
+        "right_safe": true,
+        "left_block": true,
+        "right_block": false,
+        "par_left": true,
+        "par_right": false,
+        "mean_acc_2s": -0.18821442127227783,
+        "left": {
+          "front_gap": 24.42999267578125,
+          "rear_gap": 3.959991455078125,
+          "front_rel_v": 0.8299980163574219,
+          "rear_rel_v": 0.7099990844726562
+        },
+        "right": {
+          "front_gap": null,
+          "rear_gap": null,
+          "front_rel_v": null,
+          "rear_rel_v": null
+        },
+        "neighbor_ids": {
+          "precedingId": 183,
+          "followingId": 0,
+          "leftPrecedingId": 187,
+          "leftFollowingId": 189,
+          "rightPrecedingId": 182,
+          "rightFollowingId": 0,
+          "laneId": 3,
+          "x": 274.03,
+          "y": 7.81,
+          "vx": -35.24,
+          "ax": 0.27
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "12:30",
+          "duration": 1009.2,
+          "numVehicles": 2121,
+          "numCars": 1600,
+          "numTrucks": 521,
+          "upperLaneMarkings": "3.36;7.42;11.22;15.20",
+          "lowerLaneMarkings": "21.21;25.36;29.25;33.40"
+        }
+      },
+      {
+        "score": 25.740036010742188,
+        "idx": 14379,
+        "rec": 52,
+        "veh": 189,
+        "frame": 1889,
+        "lane": 4,
+        "label": "S",
+        "front_gap": 28.389984130859375,
+        "front_rel_v": 0.11999893188476562,
+        "ttc": 20.0,
+        "front_risk": 0.6347797513008118,
+        "left_safe": true,
+        "right_safe": false,
+        "left_block": false,
+        "right_block": true,
+        "par_left": false,
+        "par_right": true,
+        "mean_acc_2s": -0.2839003801345825,
+        "left": {
+          "front_gap": null,
+          "rear_gap": null,
+          "front_rel_v": null,
+          "rear_rel_v": null
+        },
+        "right": {
+          "front_gap": 3.959991455078125,
+          "rear_gap": null,
+          "front_rel_v": -0.7099990844726562,
+          "rear_rel_v": null
+        },
+        "neighbor_ids": {
+          "precedingId": 187,
+          "followingId": 192,
+          "leftPrecedingId": 0,
+          "leftFollowingId": 0,
+          "rightPrecedingId": 188,
+          "rightFollowingId": 0,
+          "laneId": 4,
+          "x": 277.99,
+          "y": 12.33,
+          "vx": -35.95,
+          "ax": 0.25
+        },
+        "recording_meta": {
+          "locationId": 1,
+          "speedLimit": 33.33,
+          "startTime": "12:30",
+          "duration": 1009.2,
+          "numVehicles": 2121,
+          "numCars": 1600,
+          "numTrucks": 521,
+          "upperLaneMarkings": "3.36;7.42;11.22;15.20",
+          "lowerLaneMarkings": "21.21;25.36;29.25;33.40"
+        }
+      }
+    ]
+  }
+}
