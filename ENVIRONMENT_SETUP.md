@@ -245,13 +245,13 @@ Keyboard mode:
 
 ```powershell
 conda activate tase_highd
-python driver_in_loop\python_backend\run_driver_in_loop.py --paper-case-id 1 --input unity --mode ta_rldm_armpc
+python driver_in_loop\python_backend\run_driver_in_loop.py --paper-case-id 1 --input unity --dil-mode ta_rldm_armpc
 ```
 
 For Case 2:
 
 ```powershell
-python driver_in_loop\python_backend\run_driver_in_loop.py --paper-case-id 2 --input unity --mode ta_rldm_armpc
+python driver_in_loop\python_backend\run_driver_in_loop.py --paper-case-id 2 --input unity --dil-mode ta_rldm_armpc
 ```
 
 Available modes:
@@ -286,7 +286,7 @@ python driver_in_loop\python_backend\tools\inspect_g29.py
 Run:
 
 ```powershell
-python driver_in_loop\python_backend\run_driver_in_loop.py --paper-case-id 1 --input g29 --mode ta_rldm_armpc
+python driver_in_loop\python_backend\run_driver_in_loop.py --paper-case-id 1 --input g29 --dil-mode ta_rldm_armpc
 ```
 
 If no G29 is connected, `inspect_g29.py` should report no joystick. That is
@@ -374,7 +374,7 @@ For Unity DIL:
 
 ```powershell
 conda activate tase_highd
-python driver_in_loop\python_backend\run_driver_in_loop.py --paper-case-id 1 --input unity --mode ta_rldm_armpc
+python driver_in_loop\python_backend\run_driver_in_loop.py --paper-case-id 1 --input unity --dil-mode ta_rldm_armpc
 ```
 
 Then open `driver_in_loop/unity_client` in Unity and press Play.
