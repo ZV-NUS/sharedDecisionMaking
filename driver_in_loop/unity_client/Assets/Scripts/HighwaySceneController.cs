@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class HighwaySceneController : MonoBehaviour
 {
@@ -12,12 +15,31 @@ public class HighwaySceneController : MonoBehaviour
     public Material surroundingMaterial;
     public GameObject egoVehiclePrefab;
     public GameObject surroundingVehiclePrefab;
+    public string defaultEgoVehiclePrefabName = "PaperCarsCabrio2DayRed Variant";
+    public string defaultSurroundingVehiclePrefabName = "PaperCarsCabrio2NightWhite Variant";
     public bool useImportedVehiclePrefabs = true;
     public bool tintImportedVehiclePrefabs = false;
     public Vector3 importedVehicleEulerOffset = new Vector3(0.0f, 90.0f, 0.0f);
     public bool showMachineIntention = true;
     public float intentionLineWidth = 0.16f;
     public Text hudText;
+    public Text riskWarningText;
+    public float conflictWarningThresholdRad = 0.09f;
+    public float riskWarningThreshold = 0.45f;
+    public float warningBlinkFrequencyHz = 3.0f;
+    public bool showRearViewMirrors = true;
+    public bool showCockpitOverlay = false;
+    public bool showCockpitModel = false;
+    public int mirrorTextureWidth = 320;
+    public int mirrorTextureHeight = 130;
+    public int centerMirrorTextureWidth = 500;
+    public int centerMirrorTextureHeight = 125;
+    public float mirrorCameraHeight = 1.48f;
+    public float mirrorCameraBackOffset = -0.10f;
+    public float mirrorCameraLateralOffset = 1.18f;
+    public float mirrorCameraYawDeg = 18.0f;
+    public float centerMirrorYawDeg = 0.0f;
+    public float mirrorCameraFov = 52.0f;
 
     public float positionScale = 1.0f;
     public float roadLengthAhead = 320.0f;
@@ -37,14 +59,14 @@ public class HighwaySceneController : MonoBehaviour
     public float cameraLookAheadDistance = 36.0f;
     public float cameraLookHeight = 1.0f;
     public float cameraLateralOffset = 0.0f;
-    public float driverCameraHeight = 2.2f;
-    public float driverCameraForwardOffset = 1.2f;
-    public float driverCameraLookAhead = 80.0f;
-    public float driverCameraLookHeight = 1.25f;
+    public float driverCameraHeight = 1.26f;
+    public float driverCameraForwardOffset = 0.62f;
+    public float driverCameraLookAhead = 76.0f;
+    public float driverCameraLookHeight = 1.18f;
     public bool hideEgoInDriverView = true;
     public float driverCameraSmoothTime = 0.0f;
     public float driverCameraRotationFollowRate = 90.0f;
-    public bool lockDriverCameraToRoad = true;
+    public bool lockDriverCameraToRoad = false;
     public float overheadCameraHeight = 58.0f;
     public bool applyRuntimeValidationPreset = true;
     public float cameraPositionSmoothTime = 0.45f;
@@ -75,21 +97,74 @@ public class HighwaySceneController : MonoBehaviour
     private Material headlightMaterial;
     private Material taillightMaterial;
     private Material intentionMaterial;
+    private Material cockpitMaterial;
+    private Material cockpitTrimMaterial;
     private LineRenderer machineIntentionLine;
+    private Camera leftMirrorCamera;
+    private Camera rightMirrorCamera;
+    private Camera centerMirrorCamera;
+    private RawImage leftMirrorImage;
+    private RawImage rightMirrorImage;
+    private RawImage centerMirrorImage;
+    private RectTransform steeringWheelOverlay;
+    private GameObject cockpitRoot;
+    private Transform cockpitWheelRoot;
+    private RenderTexture leftMirrorTexture;
+    private RenderTexture rightMirrorTexture;
+    private RenderTexture centerMirrorTexture;
+    private float warningVisibleUntil;
 
     void Start()
     {
         if (udpClient == null) udpClient = GetComponent<DilUdpClient>();
         if (followCamera == null) followCamera = Camera.main;
+        AutoAssignVehiclePrefabs();
         EnsureMaterials();
         ApplyValidationPreset();
         EnsureRuntimeRoot();
         HideLegacyGeneratedObjects();
         ClearRuntimeRootChildren();
+        EnsureHudCanvas();
         EnsureDriverCameraRig();
+        EnsureRearViewMirrors();
+        EnsureRiskWarningText();
+        EnsureCockpitOverlay();
+        EnsureCockpitModel();
+        BringDriverUiToFront();
         ego = CreateVehicle("ego", egoMaterial, true);
         DeactivateDuplicateEgos();
     }
+
+    void AutoAssignVehiclePrefabs()
+    {
+#if UNITY_EDITOR
+        if (egoVehiclePrefab == null && defaultEgoVehiclePrefabName.Length > 0)
+        {
+            egoVehiclePrefab = FindPrefabByName(defaultEgoVehiclePrefabName);
+        }
+        if (surroundingVehiclePrefab == null && defaultSurroundingVehiclePrefabName.Length > 0)
+        {
+            surroundingVehiclePrefab = FindPrefabByName(defaultSurroundingVehiclePrefabName);
+        }
+#endif
+    }
+
+#if UNITY_EDITOR
+    GameObject FindPrefabByName(string prefabName)
+    {
+        string[] guids = AssetDatabase.FindAssets(prefabName + " t:Prefab");
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab != null && prefab.name == prefabName)
+            {
+                return prefab;
+            }
+        }
+        return null;
+    }
+#endif
 
     void Update()
     {
@@ -118,6 +193,9 @@ public class HighwaySceneController : MonoBehaviour
         if (!fixedRoadInWorld) UpdateRoadPosition(state.ego.x);
         renderCameraState = state;
         UpdateHud(state);
+        UpdateRiskWarning(state);
+        UpdateCockpitOverlay(state);
+        UpdateCockpitModel(state);
     }
 
     void LateUpdate()
@@ -125,6 +203,7 @@ public class HighwaySceneController : MonoBehaviour
         if (renderCameraState != null)
         {
             UpdateCamera(renderCameraState);
+            UpdateRearViewMirrors(renderCameraState);
         }
     }
 
@@ -140,6 +219,8 @@ public class HighwaySceneController : MonoBehaviour
         if (headlightMaterial == null) headlightMaterial = MakeMaterial(new Color(1.00f, 0.90f, 0.55f));
         if (taillightMaterial == null) taillightMaterial = MakeMaterial(new Color(0.75f, 0.02f, 0.02f));
         if (intentionMaterial == null) intentionMaterial = MakeMaterial(new Color(1.0f, 0.63f, 0.12f, 0.82f));
+        if (cockpitMaterial == null) cockpitMaterial = MakeMaterial(new Color(0.018f, 0.020f, 0.024f, 1.0f));
+        if (cockpitTrimMaterial == null) cockpitTrimMaterial = MakeMaterial(new Color(0.60f, 0.65f, 0.72f, 1.0f));
     }
 
     void ApplyValidationPreset()
@@ -154,6 +235,9 @@ public class HighwaySceneController : MonoBehaviour
         overheadCameraHeight = 72.0f;
         roadLengthAhead = 900.0f;
         roadLengthBehind = 260.0f;
+        laneLineWidth = 0.10f;
+        dashedLaneLength = 6.0f;
+        dashedLaneGap = 8.0f;
         fixedRoadInWorld = true;
         useVisualSmoothing = false;
         visualFollowRate = 18.0f;
@@ -163,14 +247,29 @@ public class HighwaySceneController : MonoBehaviour
         cameraRotationLerp = 0.08f;
         overheadSizeSmoothTime = 0.65f;
         stableOverheadCamera = true;
-        driverCameraHeight = 1.45f;
-        driverCameraForwardOffset = 1.2f;
-        driverCameraLookAhead = 80.0f;
-        driverCameraLookHeight = 1.25f;
+        driverCameraHeight = 1.26f;
+        driverCameraForwardOffset = 0.62f;
+        driverCameraLookAhead = 76.0f;
+        driverCameraLookHeight = 1.18f;
         hideEgoInDriverView = true;
         driverCameraSmoothTime = 0.0f;
         driverCameraRotationFollowRate = 90.0f;
-        lockDriverCameraToRoad = true;
+        lockDriverCameraToRoad = false;
+        showRearViewMirrors = true;
+        showCockpitOverlay = false;
+        showCockpitModel = false;
+        mirrorCameraHeight = 1.48f;
+        mirrorCameraBackOffset = -0.10f;
+        mirrorCameraLateralOffset = 1.18f;
+        mirrorCameraYawDeg = 18.0f;
+        centerMirrorYawDeg = 0.0f;
+        mirrorCameraFov = 52.0f;
+        if (udpClient != null)
+        {
+            udpClient.useRenderInterpolation = true;
+            udpClient.renderDelaySeconds = 0.06f;
+            udpClient.maxBufferedStates = 240;
+        }
     }
 
     Material MakeMaterial(Color color)
@@ -567,12 +666,13 @@ public class HighwaySceneController : MonoBehaviour
         float maxY = marks[marks.Length - 1];
         float width = Mathf.Abs(maxY - minY) + 3.5f;
         roadCenterZ = -0.5f * (minY + maxY) * positionScale;
+        float roadWindowCenterX = (roadLengthAhead - roadLengthBehind) * 0.5f;
         GameObject road = GameObject.CreatePrimitive(PrimitiveType.Cube);
         road.name = "Road";
         if (runtimeRoot != null) road.transform.SetParent(runtimeRoot.transform, true);
         road.GetComponent<Renderer>().material = roadMaterial;
         road.transform.localScale = new Vector3(roadLengthAhead + roadLengthBehind, 0.03f, width);
-        road.transform.position = new Vector3(0.0f, 0.0f, roadCenterZ);
+        road.transform.position = new Vector3(roadWindowCenterX, 0.0f, roadCenterZ);
         roadObjects.Add(road);
 
         for (int i = 0; i < marks.Length; ++i)
@@ -596,7 +696,7 @@ public class HighwaySceneController : MonoBehaviour
         if (runtimeRoot != null) line.transform.SetParent(runtimeRoot.transform, true);
         line.GetComponent<Renderer>().material = laneMaterial;
         line.transform.localScale = new Vector3(roadLengthAhead + roadLengthBehind, 0.018f, laneLineWidth);
-        line.transform.position = new Vector3(0.0f, 0.045f, -mark * positionScale);
+        line.transform.position = new Vector3((roadLengthAhead - roadLengthBehind) * 0.5f, 0.075f, -mark * positionScale);
         roadObjects.Add(line);
     }
 
@@ -614,7 +714,7 @@ public class HighwaySceneController : MonoBehaviour
             if (runtimeRoot != null) dash.transform.SetParent(runtimeRoot.transform, true);
             dash.GetComponent<Renderer>().material = laneMaterial;
             dash.transform.localScale = new Vector3(segLength, 0.018f, laneLineWidth);
-            dash.transform.position = new Vector3(x + segLength * 0.5f, 0.045f, -mark * positionScale);
+            dash.transform.position = new Vector3(x + segLength * 0.5f, 0.075f, -mark * positionScale);
             roadObjects.Add(dash);
         }
     }
@@ -811,24 +911,531 @@ public class HighwaySceneController : MonoBehaviour
     void UpdateHud(DilSimState state)
     {
         if (hudText == null) return;
-        int egoObjectCount = CountObjectsNamed("ego");
-        int runtimeChildCount = runtimeRoot == null ? 0 : runtimeRoot.transform.childCount;
-        string caseLabel = state.paper_case_id > 0
-            ? $"Paper Case {state.paper_case_id} / rollout {state.case_id}"
-            : $"Rollout Case {state.case_id}";
         hudText.text =
-            $"{caseLabel}\n" +
-            $"mode = {state.mode}\n" +
             $"t = {state.time_s:F1} s\n" +
             $"v = {state.ego.speed:F1} m/s\n" +
-            $"camera = {CameraModeName()} (C)\n" +
-            $"render interp = {udpClient.useRenderInterpolation} / {udpClient.renderDelaySeconds:F2}s\n" +
-            $"vehicles = {(state.vehicles == null ? 0 : state.vehicles.Length)}\n" +
-            $"ego objects = {egoObjectCount} / runtime children = {runtimeChildCount}\n" +
-            $"lambda_RL = {state.authority.rl:F2}\n" +
-            $"TTC = {state.risk.ttc_s:F1} s\n" +
             $"Front = {state.risk.front_distance_m:F1} m\n" +
             $"Collision = {state.safety.collision}";
+    }
+
+    void EnsureHudCanvas()
+    {
+        Canvas canvas = hudText == null ? null : hudText.GetComponentInParent<Canvas>();
+        if (canvas == null)
+        {
+            canvas = GameObject.FindObjectOfType<Canvas>();
+        }
+        if (canvas == null)
+        {
+            GameObject canvasObject = new GameObject("HUD Canvas");
+            canvas = canvasObject.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920.0f, 1080.0f);
+            canvasObject.AddComponent<GraphicRaycaster>();
+        }
+        if (hudText == null)
+        {
+            GameObject textObject = new GameObject("HUD Text");
+            textObject.transform.SetParent(canvas.transform, false);
+            Text text = textObject.AddComponent<Text>();
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (text.font == null)
+            {
+                text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            }
+            text.fontSize = 22;
+            text.color = Color.white;
+            text.alignment = TextAnchor.UpperLeft;
+            RectTransform rect = text.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.0f, 1.0f);
+            rect.anchorMax = new Vector2(0.0f, 1.0f);
+            rect.pivot = new Vector2(0.0f, 1.0f);
+            rect.anchoredPosition = new Vector2(24.0f, -24.0f);
+            rect.sizeDelta = new Vector2(360.0f, 140.0f);
+            hudText = text;
+        }
+    }
+
+    void UpdateRiskWarning(DilSimState state)
+    {
+        if (riskWarningText == null) return;
+        bool driverActivelyTurning = DriverActivelyTurning(state);
+        bool conflict = driverActivelyTurning && HasHumanMachineIntentConflict(state);
+        bool humanIntentRisk = HumanIntentHasCollisionRisk(state);
+        bool triggerWarning = driverActivelyTurning && conflict && humanIntentRisk;
+        if (triggerWarning)
+        {
+            warningVisibleUntil = Time.time + 0.55f;
+        }
+        bool showWarning = Time.time <= warningVisibleUntil;
+        if (!showWarning)
+        {
+            riskWarningText.enabled = false;
+            return;
+        }
+
+        float blink = Mathf.Sin(Time.time * Mathf.PI * 2.0f * warningBlinkFrequencyHz);
+        riskWarningText.enabled = blink > -0.25f;
+        riskWarningText.text = "HUMAN-MACHINE CONFLICT";
+    }
+
+    void EnsureRiskWarningText()
+    {
+        if (riskWarningText != null) return;
+        Canvas canvas = hudText == null ? null : hudText.GetComponentInParent<Canvas>();
+        if (canvas == null) return;
+
+        GameObject textObject = new GameObject("Risk Warning Text");
+        textObject.transform.SetParent(canvas.transform, false);
+        Text text = textObject.AddComponent<Text>();
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        if (text.font == null)
+        {
+            text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        }
+        text.fontSize = 42;
+        text.fontStyle = FontStyle.Bold;
+        text.color = new Color(1.0f, 0.14f, 0.08f, 0.96f);
+        text.alignment = TextAnchor.MiddleCenter;
+        text.text = "HUMAN-MACHINE CONFLICT";
+        text.enabled = false;
+
+        RectTransform rect = text.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 1.0f);
+        rect.anchorMax = new Vector2(0.5f, 1.0f);
+        rect.pivot = new Vector2(0.5f, 1.0f);
+        rect.anchoredPosition = new Vector2(0.0f, -188.0f);
+        rect.sizeDelta = new Vector2(860.0f, 84.0f);
+
+        Outline outline = textObject.AddComponent<Outline>();
+        outline.effectColor = new Color(0.0f, 0.0f, 0.0f, 0.85f);
+        outline.effectDistance = new Vector2(2.0f, -2.0f);
+        riskWarningText = text;
+    }
+
+    void EnsureRearViewMirrors()
+    {
+        if (!showRearViewMirrors || followCamera == null) return;
+        if (leftMirrorCamera != null || rightMirrorCamera != null || centerMirrorCamera != null) return;
+        leftMirrorTexture = new RenderTexture(mirrorTextureWidth, mirrorTextureHeight, 16);
+        rightMirrorTexture = new RenderTexture(mirrorTextureWidth, mirrorTextureHeight, 16);
+        centerMirrorTexture = new RenderTexture(centerMirrorTextureWidth, centerMirrorTextureHeight, 16);
+        leftMirrorCamera = CreateMirrorCamera("Left_Rear_View_Camera", leftMirrorTexture);
+        rightMirrorCamera = CreateMirrorCamera("Right_Rear_View_Camera", rightMirrorTexture);
+        centerMirrorCamera = CreateMirrorCamera("Cabin_Rear_View_Camera", centerMirrorTexture);
+        Canvas canvas = hudText == null ? null : hudText.GetComponentInParent<Canvas>();
+        if (canvas == null) return;
+        leftMirrorImage = CreateMirrorImage(
+            canvas.transform,
+            "Left Side Mirror",
+            leftMirrorTexture,
+            new Vector2(30.0f, 34.0f),
+            new Vector2(mirrorTextureWidth, mirrorTextureHeight),
+            new Vector2(0.0f, 0.36f),
+            new Vector2(0.0f, 0.36f),
+            new Vector2(0.0f, 0.5f),
+            "LEFT MIRROR"
+        );
+        rightMirrorImage = CreateMirrorImage(
+            canvas.transform,
+            "Right Side Mirror",
+            rightMirrorTexture,
+            new Vector2(-30.0f, 34.0f),
+            new Vector2(mirrorTextureWidth, mirrorTextureHeight),
+            new Vector2(1.0f, 0.36f),
+            new Vector2(1.0f, 0.36f),
+            new Vector2(1.0f, 0.5f),
+            "RIGHT MIRROR"
+        );
+        centerMirrorImage = CreateCenterMirrorImage(canvas.transform, "Cabin Rear View", centerMirrorTexture);
+    }
+
+    void EnsureCockpitOverlay()
+    {
+        if (!showCockpitOverlay || steeringWheelOverlay != null) return;
+        Canvas canvas = hudText == null ? null : hudText.GetComponentInParent<Canvas>();
+        if (canvas == null) return;
+
+        GameObject dashObject = new GameObject("Driver Cockpit Dashboard");
+        dashObject.transform.SetParent(canvas.transform, false);
+        Image dash = dashObject.AddComponent<Image>();
+        dash.color = new Color(0.018f, 0.020f, 0.024f, 0.72f);
+        RectTransform dashRect = dash.GetComponent<RectTransform>();
+        dashRect.anchorMin = new Vector2(0.0f, 0.0f);
+        dashRect.anchorMax = new Vector2(1.0f, 0.0f);
+        dashRect.pivot = new Vector2(0.5f, 0.0f);
+        dashRect.anchoredPosition = Vector2.zero;
+        dashRect.sizeDelta = new Vector2(0.0f, 180.0f);
+
+        GameObject wheelObject = new GameObject("Driver Steering Wheel");
+        wheelObject.transform.SetParent(canvas.transform, false);
+        SteeringWheelGraphic wheel = wheelObject.AddComponent<SteeringWheelGraphic>();
+        wheel.color = new Color(0.01f, 0.012f, 0.015f, 0.98f);
+        wheel.rimColor = new Color(0.86f, 0.90f, 0.96f, 0.98f);
+        RectTransform wheelRect = wheel.GetComponent<RectTransform>();
+        wheelRect.anchorMin = new Vector2(0.5f, 0.0f);
+        wheelRect.anchorMax = new Vector2(0.5f, 0.0f);
+        wheelRect.pivot = new Vector2(0.5f, 0.5f);
+        wheelRect.anchoredPosition = new Vector2(0.0f, 98.0f);
+        wheelRect.sizeDelta = new Vector2(290.0f, 290.0f);
+        steeringWheelOverlay = wheelRect;
+
+        dashObject.transform.SetAsLastSibling();
+        wheelObject.transform.SetAsLastSibling();
+        if (leftMirrorImage != null) leftMirrorImage.transform.parent.SetAsLastSibling();
+        if (rightMirrorImage != null) rightMirrorImage.transform.parent.SetAsLastSibling();
+        if (centerMirrorImage != null) centerMirrorImage.transform.parent.SetAsLastSibling();
+        if (riskWarningText != null) riskWarningText.transform.SetAsLastSibling();
+    }
+
+    void UpdateCockpitOverlay(DilSimState state)
+    {
+        if (steeringWheelOverlay == null || state == null) return;
+        float steer = 0.0f;
+        if (state.driver_input != null)
+        {
+            steer = state.driver_input.steer;
+            if (Mathf.Abs(steer) < 0.01f)
+            {
+                steer = state.driver_input.delta_rad / 0.20f;
+            }
+        }
+        steeringWheelOverlay.localRotation = Quaternion.Euler(0.0f, 0.0f, -Mathf.Clamp(steer, -1.0f, 1.0f) * 120.0f);
+        steeringWheelOverlay.SetAsLastSibling();
+        BringDriverUiToFront();
+    }
+
+    void EnsureCockpitModel()
+    {
+        if (!showCockpitModel || followCamera == null || cockpitRoot != null) return;
+
+        cockpitRoot = new GameObject("Driver Cockpit Model");
+        cockpitRoot.transform.SetParent(followCamera.transform, false);
+        cockpitRoot.transform.localPosition = Vector3.zero;
+        cockpitRoot.transform.localRotation = Quaternion.identity;
+        cockpitRoot.transform.localScale = Vector3.one;
+
+        CreateCockpitCube("Dashboard", new Vector3(0.0f, -0.54f, 0.82f), new Vector3(2.35f, 0.20f, 0.42f), cockpitMaterial, Quaternion.identity);
+        CreateCockpitCube("Instrument Cluster", new Vector3(0.0f, -0.36f, 0.58f), new Vector3(0.72f, 0.10f, 0.18f), cockpitTrimMaterial, Quaternion.identity);
+        CreateCockpitCube("Windshield Lower Frame", new Vector3(0.0f, -0.18f, 0.94f), new Vector3(2.35f, 0.055f, 0.08f), cockpitTrimMaterial, Quaternion.identity);
+        CreateCockpitCube("Windshield Upper Frame", new Vector3(0.0f, 0.58f, 1.05f), new Vector3(2.60f, 0.060f, 0.08f), cockpitTrimMaterial, Quaternion.identity);
+        CreateCockpitCube("Left A Pillar", new Vector3(-1.10f, 0.20f, 0.97f), new Vector3(0.08f, 1.20f, 0.08f), cockpitTrimMaterial, Quaternion.Euler(0.0f, 0.0f, -13.0f));
+        CreateCockpitCube("Right A Pillar", new Vector3(1.10f, 0.20f, 0.97f), new Vector3(0.08f, 1.20f, 0.08f), cockpitTrimMaterial, Quaternion.Euler(0.0f, 0.0f, 13.0f));
+        CreateCockpitCube("Left Door Top", new Vector3(-1.18f, -0.34f, 0.78f), new Vector3(0.08f, 0.16f, 0.80f), cockpitMaterial, Quaternion.identity);
+        CreateCockpitCube("Right Door Top", new Vector3(1.18f, -0.34f, 0.78f), new Vector3(0.08f, 0.16f, 0.80f), cockpitMaterial, Quaternion.identity);
+
+        GameObject wheelRootObject = new GameObject("Cockpit Steering Wheel");
+        wheelRootObject.transform.SetParent(cockpitRoot.transform, false);
+        wheelRootObject.transform.localPosition = new Vector3(0.0f, -0.33f, 0.46f);
+        wheelRootObject.transform.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+        wheelRootObject.transform.localScale = Vector3.one;
+        cockpitWheelRoot = wheelRootObject.transform;
+        CreateCockpitWheelRing(cockpitWheelRoot, 0.23f, 48, 0.030f);
+        CreateCockpitWheelSpoke(cockpitWheelRoot, new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.18f, 0.0f), 0.020f);
+        CreateCockpitWheelSpoke(cockpitWheelRoot, new Vector3(0.0f, 0.0f, 0.0f), new Vector3(-0.17f, -0.13f, 0.0f), 0.020f);
+        CreateCockpitWheelSpoke(cockpitWheelRoot, new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.17f, -0.13f, 0.0f), 0.020f);
+        CreateCockpitCube("Steering Hub", new Vector3(0.0f, -0.33f, 0.455f), new Vector3(0.18f, 0.18f, 0.035f), cockpitTrimMaterial, Quaternion.identity);
+    }
+
+    GameObject CreateCockpitCube(string name, Vector3 localPosition, Vector3 localScale, Material material, Quaternion localRotation)
+    {
+        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        cube.name = name;
+        cube.transform.SetParent(cockpitRoot.transform, false);
+        cube.transform.localPosition = localPosition;
+        cube.transform.localRotation = localRotation;
+        cube.transform.localScale = localScale;
+        Renderer renderer = cube.GetComponent<Renderer>();
+        if (renderer != null && material != null)
+        {
+            renderer.sharedMaterial = material;
+        }
+        return cube;
+    }
+
+    void CreateCockpitWheelRing(Transform parent, float radius, int segments, float width)
+    {
+        GameObject ringObject = new GameObject("Steering Wheel Rim");
+        ringObject.transform.SetParent(parent, false);
+        LineRenderer ring = ringObject.AddComponent<LineRenderer>();
+        ring.useWorldSpace = false;
+        ring.loop = true;
+        ring.positionCount = segments;
+        ring.startWidth = width;
+        ring.endWidth = width;
+        ring.material = cockpitTrimMaterial;
+        for (int i = 0; i < segments; i++)
+        {
+            float angle = (Mathf.PI * 2.0f * i) / segments;
+            ring.SetPosition(i, new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0.0f));
+        }
+    }
+
+    void CreateCockpitWheelSpoke(Transform parent, Vector3 from, Vector3 to, float width)
+    {
+        GameObject spokeObject = new GameObject("Steering Wheel Spoke");
+        spokeObject.transform.SetParent(parent, false);
+        LineRenderer spoke = spokeObject.AddComponent<LineRenderer>();
+        spoke.useWorldSpace = false;
+        spoke.positionCount = 2;
+        spoke.startWidth = width;
+        spoke.endWidth = width;
+        spoke.material = cockpitTrimMaterial;
+        spoke.SetPosition(0, from);
+        spoke.SetPosition(1, to);
+    }
+
+    void UpdateCockpitModel(DilSimState state)
+    {
+        if (cockpitWheelRoot == null || state == null) return;
+        float steer = 0.0f;
+        if (state.driver_input != null)
+        {
+            steer = state.driver_input.steer;
+            if (Mathf.Abs(steer) < 0.01f)
+            {
+                steer = state.driver_input.delta_rad / 0.20f;
+            }
+        }
+        cockpitWheelRoot.localRotation = Quaternion.Euler(0.0f, 0.0f, -Mathf.Clamp(steer, -1.0f, 1.0f) * 95.0f);
+    }
+
+    void BringDriverUiToFront()
+    {
+        if (leftMirrorImage != null && leftMirrorImage.transform.parent != null) leftMirrorImage.transform.parent.SetAsLastSibling();
+        if (rightMirrorImage != null && rightMirrorImage.transform.parent != null) rightMirrorImage.transform.parent.SetAsLastSibling();
+        if (centerMirrorImage != null && centerMirrorImage.transform.parent != null) centerMirrorImage.transform.parent.SetAsLastSibling();
+        if (steeringWheelOverlay != null) steeringWheelOverlay.SetAsLastSibling();
+        if (riskWarningText != null) riskWarningText.transform.SetAsLastSibling();
+    }
+
+    Camera CreateMirrorCamera(string cameraName, RenderTexture texture)
+    {
+        GameObject cameraObject = new GameObject(cameraName);
+        Camera camera = cameraObject.AddComponent<Camera>();
+        camera.clearFlags = CameraClearFlags.Skybox;
+        camera.fieldOfView = mirrorCameraFov;
+        camera.nearClipPlane = 0.05f;
+        camera.farClipPlane = 350.0f;
+        camera.targetTexture = texture;
+        camera.depth = -10;
+        return camera;
+    }
+
+    RawImage CreateMirrorImage(
+        Transform parent,
+        string imageName,
+        RenderTexture texture,
+        Vector2 anchoredPosition,
+        Vector2 size,
+        Vector2 anchorMin,
+        Vector2 anchorMax,
+        Vector2 pivot,
+        string label
+    )
+    {
+        GameObject frame = new GameObject(imageName + " Frame");
+        frame.transform.SetParent(parent, false);
+        Image frameImage = frame.AddComponent<Image>();
+        frameImage.color = new Color(0.02f, 0.025f, 0.03f, 0.82f);
+        RectTransform frameRect = frame.GetComponent<RectTransform>();
+        frameRect.anchorMin = anchorMin;
+        frameRect.anchorMax = anchorMax;
+        frameRect.pivot = pivot;
+        frameRect.anchoredPosition = anchoredPosition;
+        frameRect.sizeDelta = new Vector2(size.x + 22.0f, size.y + 36.0f);
+
+        GameObject imageObject = new GameObject(imageName);
+        imageObject.transform.SetParent(frame.transform, false);
+        RawImage image = imageObject.AddComponent<RawImage>();
+        image.texture = texture;
+        image.color = new Color(1.0f, 1.0f, 1.0f, 0.92f);
+        RectTransform rect = image.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = new Vector2(0.0f, -7.0f);
+        rect.sizeDelta = size;
+
+        Outline outline = frame.AddComponent<Outline>();
+        outline.effectColor = new Color(0.95f, 0.98f, 1.0f, 0.96f);
+        outline.effectDistance = new Vector2(2.0f, -2.0f);
+        AddMirrorLabel(frame.transform, label, new Vector2(0.0f, size.y * 0.5f + 5.0f), new Vector2(size.x, 24.0f));
+        frame.transform.SetAsLastSibling();
+        return image;
+    }
+
+    RawImage CreateCenterMirrorImage(Transform parent, string imageName, RenderTexture texture)
+    {
+        GameObject frame = new GameObject(imageName + " Frame");
+        frame.transform.SetParent(parent, false);
+        Image frameImage = frame.AddComponent<Image>();
+        frameImage.color = new Color(0.02f, 0.025f, 0.03f, 0.86f);
+        RectTransform frameRect = frame.GetComponent<RectTransform>();
+        frameRect.anchorMin = new Vector2(0.5f, 1.0f);
+        frameRect.anchorMax = new Vector2(0.5f, 1.0f);
+        frameRect.pivot = new Vector2(0.5f, 1.0f);
+        frameRect.anchoredPosition = new Vector2(0.0f, -18.0f);
+        frameRect.sizeDelta = new Vector2(centerMirrorTextureWidth + 28.0f, centerMirrorTextureHeight + 22.0f);
+
+        GameObject imageObject = new GameObject(imageName);
+        imageObject.transform.SetParent(frame.transform, false);
+        RawImage image = imageObject.AddComponent<RawImage>();
+        image.texture = texture;
+        image.color = new Color(1.0f, 1.0f, 1.0f, 0.94f);
+        RectTransform rect = image.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = Vector2.zero;
+        rect.sizeDelta = new Vector2(centerMirrorTextureWidth, centerMirrorTextureHeight);
+
+        Outline outline = frame.AddComponent<Outline>();
+        outline.effectColor = new Color(1.0f, 1.0f, 1.0f, 0.82f);
+        outline.effectDistance = new Vector2(2.0f, -2.0f);
+        AddMirrorLabel(frame.transform, "REAR VIEW", new Vector2(0.0f, centerMirrorTextureHeight * 0.5f + 3.0f), new Vector2(centerMirrorTextureWidth, 24.0f));
+        frame.transform.SetAsLastSibling();
+        return image;
+    }
+
+    void AddMirrorLabel(Transform parent, string label, Vector2 anchoredPosition, Vector2 size)
+    {
+        GameObject labelObject = new GameObject(label);
+        labelObject.transform.SetParent(parent, false);
+        Text text = labelObject.AddComponent<Text>();
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        if (text.font == null)
+        {
+            text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        }
+        text.fontSize = 15;
+        text.fontStyle = FontStyle.Bold;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.color = new Color(1.0f, 1.0f, 1.0f, 0.95f);
+        text.text = label;
+        RectTransform rect = text.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = size;
+        Outline outline = labelObject.AddComponent<Outline>();
+        outline.effectColor = new Color(0.0f, 0.0f, 0.0f, 0.9f);
+        outline.effectDistance = new Vector2(1.0f, -1.0f);
+    }
+
+    void UpdateRearViewMirrors(DilSimState state)
+    {
+        if (!showRearViewMirrors || leftMirrorCamera == null || rightMirrorCamera == null || ego == null) return;
+        Vector3 egoPos = ego.transform.position;
+        Quaternion baseRotation = ego.transform.rotation;
+        Vector3 forward = baseRotation * Vector3.right;
+        Vector3 right = baseRotation * Vector3.back;
+        PositionMirrorCamera(leftMirrorCamera, egoPos, forward, right, -mirrorCameraLateralOffset, -mirrorCameraYawDeg, mirrorCameraHeight, mirrorCameraBackOffset);
+        PositionMirrorCamera(rightMirrorCamera, egoPos, forward, right, mirrorCameraLateralOffset, mirrorCameraYawDeg, mirrorCameraHeight, mirrorCameraBackOffset);
+        if (centerMirrorCamera != null)
+        {
+            PositionMirrorCamera(centerMirrorCamera, egoPos, forward, right, 0.0f, centerMirrorYawDeg, mirrorCameraHeight + 0.18f, mirrorCameraBackOffset + 0.10f);
+        }
+    }
+
+    void PositionMirrorCamera(Camera mirrorCamera, Vector3 egoPos, Vector3 forward, Vector3 right, float lateralOffset, float yawDeg, float height, float backOffset)
+    {
+        Vector3 pos =
+            egoPos
+            + forward * backOffset
+            + right * lateralOffset
+            + Vector3.up * height;
+        Quaternion lookBack = Quaternion.LookRotation(-forward, Vector3.up);
+        Quaternion yawOffset = Quaternion.AngleAxis(yawDeg, Vector3.up);
+        mirrorCamera.transform.position = pos;
+        mirrorCamera.transform.rotation = lookBack * yawOffset;
+        mirrorCamera.fieldOfView = mirrorCameraFov;
+    }
+
+    bool HasHumanMachineConflict(DilSimState state)
+    {
+        if (state == null || state.driver_input == null || state.ego == null) return false;
+        float driverSteer = state.driver_input.delta_rad;
+        float sharedSteer = state.ego.steer;
+        return Mathf.Abs(driverSteer - sharedSteer) >= conflictWarningThresholdRad;
+    }
+
+    bool DriverActivelyTurning(DilSimState state)
+    {
+        if (state == null || state.driver_input == null) return false;
+        float steerNorm = Mathf.Abs(state.driver_input.steer);
+        float steerRad = Mathf.Abs(state.driver_input.delta_rad);
+        return steerNorm >= 0.55f || steerRad >= 0.14f;
+    }
+
+    bool HasHumanMachineIntentConflict(DilSimState state)
+    {
+        if (state == null || state.driver_input == null || !DriverActivelyTurning(state)) return false;
+        float humanDirection = TrajectoryLateralDirection(state.intention == null ? null : state.intention.human);
+        float driverSteer = state.driver_input.delta_rad;
+        if (Mathf.Abs(driverSteer) < 0.01f)
+        {
+            driverSteer = state.driver_input.steer * 0.20f;
+        }
+        float driverDirection = Mathf.Sign(driverSteer);
+        if (Mathf.Abs(humanDirection) < 0.15f || Mathf.Sign(humanDirection) != driverDirection)
+        {
+            humanDirection = driverDirection * Mathf.Min(1.0f, Mathf.Abs(driverSteer) / Mathf.Max(0.16f, conflictWarningThresholdRad));
+        }
+
+        float machineDirection = TrajectoryLateralDirection(state.intention == null ? null : state.intention.machine);
+        if (Mathf.Abs(machineDirection) < 0.15f && state.ego != null && Mathf.Abs(state.ego.steer) >= conflictWarningThresholdRad)
+        {
+            machineDirection = Mathf.Sign(state.ego.steer) * Mathf.Min(1.0f, Mathf.Abs(state.ego.steer) / Mathf.Max(conflictWarningThresholdRad, 0.001f));
+        }
+
+        bool bothTurningOpposite =
+            Mathf.Abs(humanDirection) >= 0.85f &&
+            Mathf.Abs(machineDirection) >= 0.65f &&
+            Mathf.Sign(humanDirection) != Mathf.Sign(machineDirection);
+        return bothTurningOpposite;
+    }
+
+    float TrajectoryLateralDirection(DilPointState[] trajectory)
+    {
+        if (trajectory == null || trajectory.Length < 2) return 0.0f;
+        float startY = trajectory[0].y;
+        float endY = trajectory[trajectory.Length - 1].y;
+        float dy = endY - startY;
+        if (Mathf.Abs(dy) < 0.25f) return 0.0f;
+        return Mathf.Sign(dy);
+    }
+
+    bool HumanIntentHasCollisionRisk(DilSimState state)
+    {
+        if (state == null) return false;
+        DilPointState[] humanTrajectory = state.intention == null ? null : state.intention.human;
+        if (humanTrajectory == null || humanTrajectory.Length < 2)
+        {
+            bool closeFront = state.risk != null && state.risk.front_distance_m > 0.0f && state.risk.front_distance_m < 34.0f;
+            bool lowTtc = state.risk != null && state.risk.ttc_s > 0.0f && state.risk.ttc_s < 4.0f;
+            return closeFront || lowTtc;
+        }
+        if (state.vehicles == null) return false;
+
+        float egoLength = state.ego == null ? 4.6f : Mathf.Max(4.2f, state.ego.length);
+        float egoWidth = state.ego == null ? 1.8f : Mathf.Max(1.6f, state.ego.width);
+        foreach (DilPointState p in humanTrajectory)
+        {
+            foreach (DilVehicleState v in state.vehicles)
+            {
+                float longLimit = 0.5f * (egoLength + Mathf.Max(4.0f, v.length)) + 1.2f;
+                float latLimit = 0.5f * (egoWidth + Mathf.Max(1.6f, v.width)) + 0.45f;
+                if (Mathf.Abs(p.x - v.x) <= longLimit && Mathf.Abs(p.y - v.y) <= latLimit)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     string CameraModeName()

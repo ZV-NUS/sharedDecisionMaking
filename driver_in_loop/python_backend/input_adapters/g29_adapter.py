@@ -22,7 +22,12 @@ class G29InputAdapter(DriverInputAdapter):
         invert_steer: bool = False,
         invert_pedals: bool = True,
         deadzone: float = 0.03,
-        smoothing: float = 0.35,
+        smoothing: float = 0.38,
+        steer_shape_exponent: float = 1.45,
+        pedal_shape_exponent: float = 0.65,
+        brake_shape_exponent: float = 0.30,
+        brake_gain: float = 2.00,
+        brake_rise_smoothing: float = 0.15,
         reset_button: int = 6,
         quit_button: int = 7,
         **kwargs,
@@ -36,11 +41,20 @@ class G29InputAdapter(DriverInputAdapter):
         self.invert_pedals = bool(invert_pedals)
         self.deadzone = max(0.0, min(0.5, float(deadzone)))
         self.smoothing = max(0.0, min(0.95, float(smoothing)))
+        self.steer_shape_exponent = max(1.0, float(steer_shape_exponent))
+        self.pedal_shape_exponent = max(0.25, min(2.0, float(pedal_shape_exponent)))
+        self.brake_shape_exponent = max(0.25, min(2.0, float(brake_shape_exponent)))
+        self.brake_gain = max(0.1, min(3.0, float(brake_gain)))
+        self.brake_rise_smoothing = max(0.0, min(0.95, float(brake_rise_smoothing)))
         self.reset_button = int(reset_button)
         self.quit_button = int(quit_button)
         self.steer = 0.0
         self.throttle = 0.0
         self.brake = 0.0
+        self.throttle_rest_raw = 1.0
+        self.brake_rest_raw = 1.0
+        self.throttle_min_raw = 1.0
+        self.brake_min_raw = 1.0
         try:
             import pygame  # type: ignore
         except Exception as exc:  # pragma: no cover - depends on local hardware
@@ -56,6 +70,11 @@ class G29InputAdapter(DriverInputAdapter):
         self._pygame = pygame
         self._joy = pygame.joystick.Joystick(self.joystick_index)
         self._joy.init()
+        pygame.event.pump()
+        self.throttle_rest_raw = self._safe_axis(self.throttle_axis)
+        self.brake_rest_raw = self._safe_axis(self.brake_axis)
+        self.throttle_min_raw = self.throttle_rest_raw
+        self.brake_min_raw = self.brake_rest_raw
 
     def read(self) -> DriverCommand:  # pragma: no cover - depends on local hardware
         pg = self._pygame
@@ -66,13 +85,28 @@ class G29InputAdapter(DriverInputAdapter):
 
         steer = -steer_raw if self.invert_steer else steer_raw
         steer = self._apply_deadzone(steer)
-        throttle = self._pedal_to_unit(throttle_raw)
-        brake = self._pedal_to_unit(brake_raw)
+        steer = self._shape_steer(steer)
+        if self.invert_pedals:
+            self.throttle_min_raw = min(self.throttle_min_raw, throttle_raw)
+            self.brake_min_raw = min(self.brake_min_raw, brake_raw)
+        else:
+            self.throttle_min_raw = max(self.throttle_min_raw, throttle_raw)
+            self.brake_min_raw = max(self.brake_min_raw, brake_raw)
+        throttle = self._pedal_to_unit(throttle_raw, self.throttle_rest_raw, self.throttle_min_raw)
+        brake = self._pedal_to_unit(
+            brake_raw,
+            self.brake_rest_raw,
+            self.brake_min_raw,
+            shape_exponent=self.brake_shape_exponent,
+            gain=self.brake_gain,
+        )
 
         alpha = 1.0 - self.smoothing
         self.steer = self.smoothing * self.steer + alpha * steer
         self.throttle = self.smoothing * self.throttle + alpha * throttle
-        self.brake = self.smoothing * self.brake + alpha * brake
+        brake_smoothing = self.brake_rise_smoothing if brake > self.brake else self.smoothing
+        brake_alpha = 1.0 - brake_smoothing
+        self.brake = brake_smoothing * self.brake + brake_alpha * brake
 
         reset = self._safe_button(self.reset_button)
         quit_requested = self._safe_button(self.quit_button)
@@ -111,12 +145,33 @@ class G29InputAdapter(DriverInputAdapter):
         sign = 1.0 if value >= 0.0 else -1.0
         return sign * (abs(value) - self.deadzone) / (1.0 - self.deadzone)
 
-    def _pedal_to_unit(self, raw: float) -> float:
+    def _shape_steer(self, value: float) -> float:
+        value = max(-1.0, min(1.0, float(value)))
+        if abs(value) <= 0.0:
+            return 0.0
+        return (1.0 if value >= 0.0 else -1.0) * (abs(value) ** self.steer_shape_exponent)
+
+    def _pedal_to_unit(
+        self,
+        raw: float,
+        rest_raw: float,
+        travel_raw: float,
+        *,
+        shape_exponent: float | None = None,
+        gain: float = 1.0,
+    ) -> float:
         raw = max(-1.0, min(1.0, float(raw)))
+        rest_raw = max(-1.0, min(1.0, float(rest_raw)))
+        travel_raw = max(-1.0, min(1.0, float(travel_raw)))
         if self.invert_pedals:
-            value = (1.0 - raw) * 0.5
+            denom = max(0.12, rest_raw - travel_raw)
+            value = (rest_raw - raw) / denom
         else:
-            value = (raw + 1.0) * 0.5
+            denom = max(0.12, travel_raw - rest_raw)
+            value = (raw - rest_raw) / denom
+        value = max(0.0, min(1.0, value))
         if value <= self.deadzone:
             return 0.0
-        return max(0.0, min(1.0, (value - self.deadzone) / (1.0 - self.deadzone)))
+        normalized = max(0.0, min(1.0, (value - self.deadzone) / (1.0 - self.deadzone)))
+        exponent = self.pedal_shape_exponent if shape_exponent is None else float(shape_exponent)
+        return max(0.0, min(1.0, gain * (normalized ** exponent)))

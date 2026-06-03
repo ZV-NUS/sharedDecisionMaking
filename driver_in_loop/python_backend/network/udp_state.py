@@ -42,10 +42,19 @@ class UdpDriverInputReceiver:
 
     def __init__(self, port: int = 50711, enabled: bool = False) -> None:
         self.enabled = bool(enabled)
+        self.port = int(port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setblocking(False)
         if self.enabled:
-            self.sock.bind(("127.0.0.1", int(port)))
+            try:
+                self.sock.bind(("127.0.0.1", self.port))
+            except OSError as exc:
+                self.sock.close()
+                raise OSError(
+                    f"UDP input port {self.port} is already in use. "
+                    "Close the previous DIL backend process or choose another "
+                    "--unity-input-port."
+                ) from exc
         self.latest = DriverCommand(source="udp")
         self.ready = False
 

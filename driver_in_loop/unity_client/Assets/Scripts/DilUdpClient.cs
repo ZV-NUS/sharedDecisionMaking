@@ -83,9 +83,21 @@ public class DilIntentionState
 }
 
 [Serializable]
+public class DilDriverInputState
+{
+    public string source;
+    public float steer;
+    public float throttle;
+    public float brake;
+    public float delta_rad;
+    public float acceleration_mps2;
+}
+
+[Serializable]
 public class DilSimState
 {
     public string type;
+    public string session_id;
     public string mode;
     public int paper_case_id;
     public int case_id;
@@ -101,13 +113,14 @@ public class DilSimState
     public DilRiskState risk;
     public DilSafetyState safety;
     public DilRoadState road;
+    public DilDriverInputState driver_input;
 }
 
 public class DilUdpClient : MonoBehaviour
 {
     public int listenPort = 50710;
     public bool useRenderInterpolation = true;
-    public float renderDelaySeconds = 0.20f;
+    public float renderDelaySeconds = 0.06f;
     public int maxBufferedStates = 240;
     public DilSimState LatestState { get; private set; }
     public bool HasState { get; private set; }
@@ -122,6 +135,7 @@ public class DilUdpClient : MonoBehaviour
     private int stateSequence;
     private bool renderClockReady;
     private float renderClock;
+    private string activeSessionId = "";
 
     void Start()
     {
@@ -147,6 +161,26 @@ public class DilUdpClient : MonoBehaviour
 
                 lock (stateLock)
                 {
+                    string incomingSession = parsed.session_id == null ? "" : parsed.session_id;
+                    bool hasIncomingSession = incomingSession.Length > 0;
+                    bool hasActiveSession = activeSessionId != null && activeSessionId.Length > 0;
+                    bool shouldSwitchSession =
+                        hasIncomingSession &&
+                        (!hasActiveSession || parsed.time_s < 0.25f && incomingSession != activeSessionId);
+
+                    if (shouldSwitchSession)
+                    {
+                        activeSessionId = incomingSession;
+                        stateHistory.Clear();
+                        lastAcceptedFrameIndex = -1;
+                        lastAcceptedTime = -1.0f;
+                        renderClockReady = false;
+                    }
+                    else if (hasIncomingSession && hasActiveSession && incomingSession != activeSessionId)
+                    {
+                        continue;
+                    }
+
                     // UDP may occasionally deliver an older packet after a newer one.
                     // Do not clear the buffer for normal out-of-order packets; just ignore them.
                     bool looksLikeNewRun =

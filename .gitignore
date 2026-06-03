@@ -60,6 +60,25 @@ driver_in_loop/unity_client/UserSettings/
 driver_in_loop/unity_client/*.csproj
 driver_in_loop/unity_client/*.sln
 
+# Logitech SDK: keep only the C# wrapper and the runtime x64 DLL.
+*.pdb
+driver_in_loop/unity_client/Assets/Logitech SDK/SDK Documentation/
+driver_in_loop/unity_client/Assets/Logitech SDK/SDK Documentation.meta
+driver_in_loop/unity_client/Assets/Logitech SDK/Script Sample~/
+driver_in_loop/unity_client/Assets/Logitech SDK/Script Sample~.meta
+driver_in_loop/unity_client/Assets/Logitech SDK/AppletData/
+driver_in_loop/unity_client/Assets/Logitech SDK/AppletData.meta
+driver_in_loop/unity_client/Assets/Logitech SDK/*.dll
+driver_in_loop/unity_client/Assets/Logitech SDK/*.dll.meta
+driver_in_loop/unity_client/Assets/Logitech SDK/*.lib
+driver_in_loop/unity_client/Assets/Logitech SDK/*.lib.meta
+driver_in_loop/unity_client/Assets/Logitech SDK/*.pdf
+driver_in_loop/unity_client/Assets/Logitech SDK/*.pdf.meta
+driver_in_loop/unity_client/Assets/Logitech SDK/*.pdb.meta
+driver_in_loop/unity_client/Assets/Plugins/LogitechSteeringWheelEnginesWrapper.dll
+driver_in_loop/unity_client/Assets/Plugins/LogitechSteeringWheelEnginesWrapper.dll.meta
+driver_in_loop/unity_client/Assets/Plugins/x86_64/*.pdb.meta
+
 # OS/editor
 .DS_Store
 Thumbs.db

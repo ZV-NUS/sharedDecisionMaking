@@ -362,6 +362,7 @@ class RealtimeSharedControlRunner:
     ) -> dict[str, Any]:
         return {
             "type": "sim_state",
+            "session_id": "",
             "paper_case_id": int(self.config.paper_case_id) if self.config.paper_case_id is not None else 0,
             "case_id": int(self.case["record"]["case_id"]),
             "case_name": self.case["record"].get("case_name", ""),
